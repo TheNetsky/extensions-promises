@@ -21,7 +21,7 @@ const headers = {
 }
 
 export const MangaFox2Info: SourceInfo = {
-  version: '1.0.0',
+  version: '1.0.',
   name: 'MangaFox2',
   icon: 'icon.png',
   author: 'Netsky <3 Sirus',
@@ -49,9 +49,9 @@ export class MangaFox2 extends Source {
       cookies: this.cookies
     })
 
-    const response = await this.requestManager.schedule(request, 1)
-    const $ = this.cheerio.load(response.data)
-    return parseMangaDetails($, mangaId)
+    const response = await this.requestManager.schedule(request, 1);
+    const $ = this.cheerio.load(response.data);
+    return parseMangaDetails($, mangaId);
   }
 
   async getChapters(mangaId: string): Promise<Chapter[]> {

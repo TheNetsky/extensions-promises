@@ -13,14 +13,13 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
   const titles = [];
   titles.push(title!);
   //Still gotta fix those tags as well tag advanced search :C
-  const tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: [] }),
-  createTagSection({ id: '1', label: 'format', tags: [] })];
+  let arrayTags: Tag[] = [];
 
   $('a', '.detail-info-right-tag-list').each((i, tag) => {
     const id = $(tag).attr('href')!.match(tagRegexp)![1];
     const label = $(tag).text().trim();
     if (["Adult", "Smut", "Mature"].includes(label)) hentai = true;
-    tagSections[0].tags.push(createTag({ id: id, label: label! }));
+    arrayTags = [...arrayTags, createTag({ id: id, label: label })];
   });
 
   let status = MangaStatus.ONGOING;
@@ -36,6 +35,10 @@ export const parseMangaDetails = ($: CheerioStatic, mangaId: string): Manga => {
       break;
   }
 
+  console.log(arrayTags)
+  let tagSections: TagSection[] = [createTagSection({ id: '0', label: 'genres', tags: arrayTags })];
+  console.log(tagSections)
+  
   return createManga({
     id: mangaId,
     titles: titles,
