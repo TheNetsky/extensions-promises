@@ -366,6 +366,7 @@ class MangaFox2 extends paperback_extensions_common_1.Source {
         this.cookies = [createCookie({ name: 'isAdult', value: '1', domain: "fanfox.net" })];
     }
     getMangaShareUrl(mangaId) { return `${FF_DOMAIN}/manga/${mangaId}`; }
+    ;
     getMangaDetails(mangaId) {
         return __awaiter(this, void 0, void 0, function* () {
             const request = createRequestObject({
@@ -448,7 +449,7 @@ class MangaFox2 extends paperback_extensions_common_1.Source {
     getViewMoreItems(homepageSectionId, metadata) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            let page = Number((_a = metadata === null || metadata === void 0 ? void 0 : metadata.page) !== null && _a !== void 0 ? _a : 1);
+            let page = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.page) !== null && _a !== void 0 ? _a : 1;
             let param = '';
             switch (homepageSectionId) {
                 case "hot_update":
@@ -483,7 +484,7 @@ class MangaFox2 extends paperback_extensions_common_1.Source {
     searchRequest(query, metadata) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            let page = Number((_a = metadata === null || metadata === void 0 ? void 0 : metadata.page) !== null && _a !== void 0 ? _a : 1);
+            let page = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.page) !== null && _a !== void 0 ? _a : 1;
             const search = MangaFox2Parser_1.generateSearch(query);
             const request = createRequestObject({
                 url: `${FF_DOMAIN}/search?`,
@@ -651,7 +652,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         const image = $('img', manga).first().attr('src');
         const title = $('.manga-list-1-item-title', manga).text().trim();
         const subtitle = $('.manga-list-1-item-subtitle', manga).text().trim();
-        if (typeof id === 'undefined' || hotManga.find(e => e.id == id))
+        if (typeof id === 'undefined')
             return;
         hotManga.push(createMangaTile({
             id: id,
@@ -665,7 +666,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         const image = $('img', manga).first().attr('src');
         const title = $('.manga-list-1-item-title', manga).text().trim();
         const subtitle = $('.manga-list-1-item-subtitle', manga).text().trim();
-        if (typeof id === 'undefined' || beingReadManga.find(e => e.id == id))
+        if (typeof id === 'undefined')
             return;
         beingReadManga.push(createMangaTile({
             id: id,
@@ -679,7 +680,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         const image = $('img', manga).first().attr('src');
         const title = $('.manga-list-1-item-title', manga).text().trim();
         const subtitle = $('.manga-list-1-item-subtitle', manga).text().trim();
-        if (typeof id === 'undefined' || newManga.find(e => e.id == id))
+        if (typeof id === 'undefined')
             return;
         newManga.push(createMangaTile({
             id: id,
@@ -693,7 +694,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         const image = $('img', manga).first().attr('src');
         const title = $('.manga-list-4-item-title', manga).text().trim();
         const subtitle = $('.manga-list-4-item-subtitle', manga).text().trim();
-        if (typeof id === 'undefined' || latestManga.find(e => e.id == id))
+        if (typeof id === 'undefined')
             return;
         latestManga.push(createMangaTile({
             id: id,
@@ -733,6 +734,7 @@ exports.generateSearch = (query) => {
 };
 exports.parseSearch = ($) => {
     const mangas = [];
+    const collectedIds = [];
     const idRegExp = new RegExp('\\/manga\\/(.*)\\/');
     $('ul.manga-list-4-list').children('li').each((i, manga) => {
         const id = $('a', manga).first().attr('href').match(idRegExp)[1];
@@ -742,16 +744,19 @@ exports.parseSearch = ($) => {
         const author = $('a', tips[0]).text().trim();
         const lastUpdate = $('a', tips[1]).text().trim();
         const shortDesc = $(tips[2]).text().trim();
-        if (typeof id === 'undefined' || mangas.find(e => e.id == id))
+        if (typeof id === 'undefined')
             return;
-        mangas.push(createMangaTile({
-            id,
-            image: image,
-            title: createIconText({ text: title !== null && title !== void 0 ? title : '' }),
-            subtitleText: createIconText({ text: author !== null && author !== void 0 ? author : '' }),
-            primaryText: createIconText({ text: shortDesc !== null && shortDesc !== void 0 ? shortDesc : '' }),
-            secondaryText: createIconText({ text: lastUpdate !== null && lastUpdate !== void 0 ? lastUpdate : '' }),
-        }));
+        if (!collectedIds.includes(id)) {
+            mangas.push(createMangaTile({
+                id,
+                image: image,
+                title: createIconText({ text: title !== null && title !== void 0 ? title : '' }),
+                subtitleText: createIconText({ text: author !== null && author !== void 0 ? author : '' }),
+                primaryText: createIconText({ text: shortDesc !== null && shortDesc !== void 0 ? shortDesc : '' }),
+                secondaryText: createIconText({ text: lastUpdate !== null && lastUpdate !== void 0 ? lastUpdate : '' }),
+            }));
+            collectedIds.push(id);
+        }
     });
     return mangas;
 };
@@ -766,7 +771,7 @@ exports.parseViewMore = ($, homepageSectionId) => {
             const image = (_a = $('img', p).first().attr('src')) !== null && _a !== void 0 ? _a : "";
             const title = $('.manga-list-4-item-title', p).text().trim();
             const subtitle = $('.manga-list-4-item-subtitle', p).text().trim();
-            if (typeof id === 'undefined' || manga.find(e => e.id == id))
+            if (typeof id === 'undefined')
                 continue;
             manga.push(createMangaTile({
                 id,
@@ -784,7 +789,7 @@ exports.parseViewMore = ($, homepageSectionId) => {
             const image = (_b = $('img', p).first().attr('src')) !== null && _b !== void 0 ? _b : '';
             const title = $('.manga-list-1-item-title', p).text().trim();
             const subtitle = $('.manga-list-1-item-subtitle', p).text().trim();
-            if (typeof id === 'undefined' || manga.find(e => e.id == id))
+            if (typeof id === 'undefined')
                 continue;
             manga.push(createMangaTile({
                 id,
