@@ -345,7 +345,7 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangaFox2Info = {
-    version: '1.0.3',
+    version: '1.0.4',
     name: 'MangaFox2',
     icon: 'icon.png',
     author: 'Netsky <3 Sirus',
@@ -394,11 +394,9 @@ class MangaFox2 extends paperback_extensions_common_1.Source {
     }
     getChapterDetails(mangaId, chapterId) {
         return __awaiter(this, void 0, void 0, function* () {
-            let metadata = { 'mangaId': mangaId, 'chapterId': chapterId, 'nextPage': false, 'page': 1 };
             const request = createRequestObject({
                 url: `${FF_DOMAIN_MOBILE}/roll_manga/${mangaId}/${chapterId}`,
                 method: "GET",
-                metadata: metadata,
                 cookies: this.cookies
             });
             const response = yield this.requestManager.schedule(request, 1);
@@ -448,9 +446,9 @@ class MangaFox2 extends paperback_extensions_common_1.Source {
         });
     }
     getViewMoreItems(homepageSectionId, metadata) {
-        var _a, _b;
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            let page = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.page) !== null && _a !== void 0 ? _a : 1;
+            let page = Number((_a = metadata === null || metadata === void 0 ? void 0 : metadata.page) !== null && _a !== void 0 ? _a : 1);
             let param = '';
             switch (homepageSectionId) {
                 case "hot_update":
@@ -475,7 +473,7 @@ class MangaFox2 extends paperback_extensions_common_1.Source {
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
             const manga = MangaFox2Parser_1.parseViewMore($, homepageSectionId);
-            metadata = (_b = { page: page + 1 }) !== null && _b !== void 0 ? _b : undefined;
+            metadata = !MangaFox2Parser_1.isLastPage($) ? { page: page + 1 } : undefined;
             return createPagedResults({
                 results: manga,
                 metadata
@@ -483,9 +481,9 @@ class MangaFox2 extends paperback_extensions_common_1.Source {
         });
     }
     searchRequest(query, metadata) {
-        var _a, _b;
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            let page = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.page) !== null && _a !== void 0 ? _a : 1;
+            let page = Number((_a = metadata === null || metadata === void 0 ? void 0 : metadata.page) !== null && _a !== void 0 ? _a : 1);
             const search = MangaFox2Parser_1.generateSearch(query);
             const request = createRequestObject({
                 url: `${FF_DOMAIN}/search?`,
@@ -497,7 +495,7 @@ class MangaFox2 extends paperback_extensions_common_1.Source {
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
             const manga = MangaFox2Parser_1.parseSearch($);
-            metadata = (_b = { page: page + 1 }) !== null && _b !== void 0 ? _b : undefined;
+            metadata = !MangaFox2Parser_1.isLastPage($) ? { page: page + 1 } : undefined;
             return createPagedResults({
                 results: manga,
                 metadata
@@ -522,7 +520,7 @@ exports.MangaFox2 = MangaFox2;
 },{"./MangaFox2Parser":27,"paperback-extensions-common":4}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseTags = exports.parseViewMore = exports.parseSearch = exports.generateSearch = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.isLastPage = exports.parseTags = exports.parseViewMore = exports.parseSearch = exports.generateSearch = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 exports.parseMangaDetails = ($, mangaId) => {
     var _a;
@@ -653,6 +651,8 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         const image = $('img', manga).first().attr('src');
         const title = $('.manga-list-1-item-title', manga).text().trim();
         const subtitle = $('.manga-list-1-item-subtitle', manga).text().trim();
+        if (typeof id === 'undefined' || hotManga.find(e => e.id == id))
+            return;
         hotManga.push(createMangaTile({
             id: id,
             image: image,
@@ -665,6 +665,8 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         const image = $('img', manga).first().attr('src');
         const title = $('.manga-list-1-item-title', manga).text().trim();
         const subtitle = $('.manga-list-1-item-subtitle', manga).text().trim();
+        if (typeof id === 'undefined' || beingReadManga.find(e => e.id == id))
+            return;
         beingReadManga.push(createMangaTile({
             id: id,
             image: image,
@@ -677,6 +679,8 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         const image = $('img', manga).first().attr('src');
         const title = $('.manga-list-1-item-title', manga).text().trim();
         const subtitle = $('.manga-list-1-item-subtitle', manga).text().trim();
+        if (typeof id === 'undefined' || newManga.find(e => e.id == id))
+            return;
         newManga.push(createMangaTile({
             id: id,
             image: image,
@@ -689,6 +693,8 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         const image = $('img', manga).first().attr('src');
         const title = $('.manga-list-4-item-title', manga).text().trim();
         const subtitle = $('.manga-list-4-item-subtitle', manga).text().trim();
+        if (typeof id === 'undefined' || latestManga.find(e => e.id == id))
+            return;
         latestManga.push(createMangaTile({
             id: id,
             image: image,
@@ -728,7 +734,7 @@ exports.generateSearch = (query) => {
 exports.parseSearch = ($) => {
     const mangas = [];
     const idRegExp = new RegExp('\\/manga\\/(.*)\\/');
-    $('ul.manga-list-4-list').children('li').each((index, manga) => {
+    $('ul.manga-list-4-list').children('li').each((i, manga) => {
         const id = $('a', manga).first().attr('href').match(idRegExp)[1];
         const image = $('img', manga).first().attr('src');
         const title = $('p.manga-list-4-item-title a', manga).first().text().trim();
@@ -736,6 +742,8 @@ exports.parseSearch = ($) => {
         const author = $('a', tips[0]).text().trim();
         const lastUpdate = $('a', tips[1]).text().trim();
         const shortDesc = $(tips[2]).text().trim();
+        if (typeof id === 'undefined' || mangas.find(e => e.id == id))
+            return;
         mangas.push(createMangaTile({
             id,
             image: image,
@@ -758,6 +766,8 @@ exports.parseViewMore = ($, homepageSectionId) => {
             const image = (_a = $('img', p).first().attr('src')) !== null && _a !== void 0 ? _a : "";
             const title = $('.manga-list-4-item-title', p).text().trim();
             const subtitle = $('.manga-list-4-item-subtitle', p).text().trim();
+            if (typeof id === 'undefined' || manga.find(e => e.id == id))
+                continue;
             manga.push(createMangaTile({
                 id,
                 image,
@@ -774,6 +784,8 @@ exports.parseViewMore = ($, homepageSectionId) => {
             const image = (_b = $('img', p).first().attr('src')) !== null && _b !== void 0 ? _b : '';
             const title = $('.manga-list-1-item-title', p).text().trim();
             const subtitle = $('.manga-list-1-item-subtitle', p).text().trim();
+            if (typeof id === 'undefined' || manga.find(e => e.id == id))
+                continue;
             manga.push(createMangaTile({
                 id,
                 image,
@@ -784,6 +796,7 @@ exports.parseViewMore = ($, homepageSectionId) => {
         return manga;
     }
 };
+//Might need to add some types too!
 exports.parseTags = ($) => {
     var _a;
     const tagSections = [createTagSection({ id: '0', label: 'genres', tags: [] })];
@@ -829,6 +842,18 @@ const parseDate = (date) => {
         dateObj = new Date(date);
     }
     return dateObj;
+};
+/*
+Add actual page checking!
+However I'm too tired right now, as well as the fact that this was mainly an issue for the "Hot Manga" section.
+*/
+exports.isLastPage = ($) => {
+    let isLast = false;
+    const chapterPagesElement = $('.pager-list-left').first();
+    const pagesLinksElements = $('a', chapterPagesElement).toArray();
+    if (pagesLinksElements.length <= 0)
+        isLast = true;
+    return isLast;
 };
 
 },{"paperback-extensions-common":4}]},{},[26])(26)
