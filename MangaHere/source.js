@@ -752,6 +752,7 @@ exports.parseSearch = ($) => {
                 primaryText: createIconText({ text: shortDesc !== null && shortDesc !== void 0 ? shortDesc : '' }),
                 secondaryText: createIconText({ text: lastUpdate !== null && lastUpdate !== void 0 ? lastUpdate : '' }),
             }));
+            collectedIds.push(id);
         }
     });
     return mangas;
