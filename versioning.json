@@ -4,7 +4,7 @@
         {
             "id": "MangaFox2",
             "name": "MangaFox2",
-            "author": "Netsky <3 Sirus",
+            "author": "Netsky",
             "desc": "Extension that pulls manga from Fanfox aka Mangafox.",
             "website": "http://github.com/TheNetsky",
             "version": "1.0.5",

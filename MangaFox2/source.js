@@ -348,7 +348,7 @@ exports.MangaFox2Info = {
     version: '1.0.5',
     name: 'MangaFox2',
     icon: 'icon.png',
-    author: 'Netsky <3 Sirus',
+    author: 'Netsky',
     authorWebsite: 'https://github.com/TheNetsky',
     description: 'Extension that pulls manga from Fanfox aka Mangafox.',
     hentaiSource: false,
