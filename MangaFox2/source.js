@@ -345,12 +345,12 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangaFox2Info = {
-    version: '1.0.4',
+    version: '1.0.5',
     name: 'MangaFox2',
     icon: 'icon.png',
     author: 'Netsky <3 Sirus',
     authorWebsite: 'https://github.com/TheNetsky',
-    description: 'Extension that pulls manga from Fanfox.net aka Mangafox.net.',
+    description: 'Extension that pulls manga from Fanfox aka Mangafox.',
     hentaiSource: false,
     websiteBaseURL: FF_DOMAIN,
     sourceTags: [
@@ -491,7 +491,7 @@ class MangaFox2 extends paperback_extensions_common_1.Source {
                 method,
                 headers,
                 cookies: this.cookies,
-                param: `${search}${'&page=' + page}`
+                param: `page=${page}${search}`
             });
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
@@ -711,25 +711,10 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         sectionCallback(section);
 };
 exports.generateSearch = (query) => {
-    var _a, _b, _c, _d;
-    const genres = ((_a = query.includeGenre) !== null && _a !== void 0 ? _a : []).join(',');
-    const excluded = ((_b = query.excludeGenre) !== null && _b !== void 0 ? _b : []).join(',,');
-    const type = ((_c = query.includeFormat) !== null && _c !== void 0 ? _c : [])[0];
-    let status = "";
-    switch (query.status) {
-        case 0:
-            status = '2';
-            break;
-        case 1:
-            status = '1';
-            break;
-        default:
-            status = '0';
-    }
-    let search = `name=${encodeURI((_d = query.title) !== null && _d !== void 0 ? _d : '')}&`;
-    search += `author=${encodeURI(query.author || '')}&`;
-    search += `artist=${encodeURI(query.artist || '')}&`;
-    search += `type=${type}&genres=${genres}&nogenres=${excluded}&st=${status}`;
+    var _a;
+    let search = (_a = query.title) !== null && _a !== void 0 ? _a : "";
+    search = search.replace(/\s+/g, "+");
+    search = `&title&genres&nogenres&sort&stype=1&name=${search}&type=0&author_method=cw&author&artist_method=cw&artist&rating_method=eq&rating&released_method=eq&released&st=0`;
     return search;
 };
 exports.parseSearch = ($) => {
@@ -765,6 +750,7 @@ exports.parseViewMore = ($, homepageSectionId) => {
     const manga = [];
     const idRegExp = new RegExp('\\/manga\\/(.*)\\/');
     if (homepageSectionId === "latest_updates") {
+        const collectedIds = [];
         const panel = $(".manga-list-4.mt15");
         for (let p of $('.manga-list-4-list > li', panel).toArray()) {
             const id = $('a', p).first().attr('href').match(idRegExp)[1];
@@ -773,16 +759,20 @@ exports.parseViewMore = ($, homepageSectionId) => {
             const subtitle = $('.manga-list-4-item-subtitle', p).text().trim();
             if (typeof id === 'undefined')
                 continue;
-            manga.push(createMangaTile({
-                id,
-                image,
-                title: createIconText({ text: title }),
-                subtitleText: createIconText({ text: subtitle }),
-            }));
+            if (!collectedIds.includes(id)) {
+                manga.push(createMangaTile({
+                    id,
+                    image,
+                    title: createIconText({ text: title }),
+                    subtitleText: createIconText({ text: subtitle }),
+                }));
+                collectedIds.push(id);
+            }
         }
         return manga;
     }
     else {
+        const collectedIds = [];
         const panel = $('.manga-list-1');
         for (let p of $('li', panel).toArray()) {
             const id = $('a', p).first().attr('href').match(idRegExp)[1];
@@ -791,12 +781,15 @@ exports.parseViewMore = ($, homepageSectionId) => {
             const subtitle = $('.manga-list-1-item-subtitle', p).text().trim();
             if (typeof id === 'undefined')
                 continue;
-            manga.push(createMangaTile({
-                id,
-                image,
-                title: createIconText({ text: title }),
-                subtitleText: createIconText({ text: subtitle }),
-            }));
+            if (!collectedIds.includes(id)) {
+                manga.push(createMangaTile({
+                    id,
+                    image,
+                    title: createIconText({ text: title }),
+                    subtitleText: createIconText({ text: subtitle }),
+                }));
+                collectedIds.push(id);
+            }
         }
         return manga;
     }
@@ -848,15 +841,18 @@ const parseDate = (date) => {
     }
     return dateObj;
 };
-/*
-Add actual page checking!
-However I'm too tired right now, as well as the fact that this was mainly an issue for the "Hot Manga" section.
-*/
 exports.isLastPage = ($) => {
     let isLast = false;
-    const chapterPagesElement = $('.pager-list-left').first();
-    const pagesLinksElements = $('a', chapterPagesElement).toArray();
-    if (pagesLinksElements.length <= 0)
+    const current = Number($("a.active", ".pager-list-left").text());
+    let lastPage = [];
+    for (const p of $("a", ".pager-list-left").toArray()) {
+        let page = Number($(p).text());
+        if (isNaN(page))
+            continue;
+        lastPage.push(page);
+    }
+    lastPage = lastPage.sort((a, b) => b - a);
+    if (!current || !lastPage[0] || current >= lastPage[0])
         isLast = true;
     return isLast;
 };

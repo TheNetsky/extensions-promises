@@ -1,13 +1,13 @@
 {
-    "buildTime": "2021-03-22T20:30:38.071Z",
+    "buildTime": "2021-03-28T20:30:38.071Z",
     "sources": [
         {
             "id": "MangaFox2",
             "name": "MangaFox2",
             "author": "Netsky <3 Sirus",
-            "desc": "Extension that pulls manga from Fanfox.net aka Mangafox.net.",
+            "desc": "Extension that pulls manga from Fanfox aka Mangafox.",
             "website": "http://github.com/TheNetsky",
-            "version": "1.0.4",
+            "version": "1.0.5",
             "icon": "icon.png",
             "tags": [
                 {
@@ -23,7 +23,7 @@
             "author": "TheNetsky",
             "desc": "Extension that pulls manga from MangaHere.",
             "website": "http://github.com/TheNetsky",
-            "version": "1.0.2",
+            "version": "1.0.3",
             "icon": "icon.png",
             "tags": [
                 {
@@ -32,6 +32,42 @@
                 }
             ],
             "websiteBaseURL": "https://www.mangahere.cc"
+        },
+        {
+            "id": "MangaKatana",
+            "name": "MangaKatana",
+            "author": "TheNetsky",
+            "desc": "Extension that pulls manga from MangaKatana.",
+            "website": "http://github.com/TheNetsky",
+            "version": "1.0.0",
+            "icon": "icon.png",
+            "tags": [
+                {
+                    "text": "Notifications",
+                    "type": "success"
+                },
+                {
+                    "text": "Buggy",
+                    "type": "danger"
+                }
+            ],
+            "websiteBaseURL": "https://mangakatana.com"
+        },
+        {
+            "id": "Mangahub",
+            "name": "Mangahub",
+            "author": "TheNetsky",
+            "desc": "Extension that pulls manga from Mangahub.",
+            "website": "http://github.com/TheNetsky",
+            "version": "1.0.0",
+            "icon": "icon.png",
+            "tags": [
+                {
+                    "text": "Notifications",
+                    "type": "success"
+                }
+            ],
+            "websiteBaseURL": "https://mangahub.io"
         }
     ]
 }
