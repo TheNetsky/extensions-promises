@@ -1,5 +1,5 @@
 {
-    "buildTime": "2021-03-28T20:30:38.071Z",
+    "buildTime": "2021-03-30T18:08:17.077Z",
     "sources": [
         {
             "id": "MangaFox2",
@@ -68,6 +68,22 @@
                 }
             ],
             "websiteBaseURL": "https://mangahub.io"
+        },
+        {
+            "id": "Readm",
+            "name": "Readm",
+            "author": "Netsky",
+            "desc": "Extension that pulls manga from Readm.",
+            "website": "https://github.com/TheNetsky",
+            "version": "1.0.0",
+            "icon": "icon.png",
+            "tags": [
+                {
+                    "text": "Notifications",
+                    "type": "success"
+                }
+            ],
+            "websiteBaseURL": "https://readm.org"
         }
     ]
 }
