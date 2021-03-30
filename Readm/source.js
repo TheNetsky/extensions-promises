@@ -724,66 +724,42 @@ exports.parseViewMore = ($, homepageSectionId) => {
     return manga;
 };
 const parseDate = (date) => {
+    var _a;
     date = date.toUpperCase();
-    let dateObj;
-    if (["LESS THAN AN HOUR", "JUST NOW"].includes(date)) {
-        dateObj = new Date();
+    let time;
+    let number = Number(((_a = /\d*/.exec(date)) !== null && _a !== void 0 ? _a : [])[0]);
+    if (date.includes("LESS THAN AN HOUR") || date.includes("JUST NOW")) {
+        time = new Date(Date.now());
     }
-    else if (date.includes("YEARS")) {
-        let years = Number.parseInt(date.match("[0-9]*")[0]);
-        dateObj = new Date();
-        dateObj.setDate(dateObj.getDate() - (years * 365));
+    else if (date.includes("YEAR") || date.includes("YEARS")) {
+        time = new Date(Date.now() - (number * 31556952000));
     }
-    else if (date.includes("YEAR")) {
-        dateObj = new Date();
-        dateObj.setDate(dateObj.getDate() - 365);
+    else if (date.includes("MONTH") || date.includes("MONTHS")) {
+        time = new Date(Date.now() - (number * 2592000000));
     }
-    else if (date.includes("WEEK")) {
-        dateObj = new Date();
-        dateObj.setDate(dateObj.getDate() - 7);
+    else if (date.includes("WEEK") || date.includes("WEEKS")) {
+        time = new Date(Date.now() - (number * 604800000));
     }
-    else if (date.includes("WEEKS")) {
-        let weeks = Number.parseInt(date.match("[0-9]*")[0]);
-        dateObj = new Date();
-        dateObj.setDate(dateObj.getDate() - (weeks * 7));
+    else if (date.includes("YESERDAY")) {
+        time = new Date(Date.now() - 86400000);
     }
-    else if (date.includes("DAYS")) {
-        let days = Number.parseInt(date.match("[0-9]*")[0]);
-        dateObj = new Date();
-        dateObj.setDate(dateObj.getDate() - days);
+    else if (date.includes("DAY") || date.includes("DAYS")) {
+        time = new Date(Date.now() - (number * 86400000));
     }
-    else if (date.includes("DAY")) {
-        dateObj = new Date();
-        dateObj.setDate(dateObj.getDate() - 1);
+    else if (date.includes("HOUR") || date.includes("HOURS")) {
+        time = new Date(Date.now() - (number * 3600000));
     }
-    else if (date.includes("HOUR")) {
-        let hour = Number.parseInt(date.match("[0-9]*")[0]);
-        if (hour == null) {
-            hour = 0;
-        }
-        dateObj = new Date();
-        dateObj.setHours(dateObj.getHours() - hour);
+    else if (date.includes("MINUTE") || date.includes("MINUTES")) {
+        time = new Date(Date.now() - (number * 60000));
     }
-    else if (date.includes("MINUTE")) {
-        let minute = Number.parseInt(date.match("[0-9]*")[0]);
-        if (minute == null) {
-            minute = 0;
-        }
-        dateObj = new Date();
-        dateObj.setMinutes(dateObj.getMinutes() - minute);
-    }
-    else if (date.includes("SECOND")) {
-        let second = Number.parseInt(date.match("[0-9]*")[0]);
-        if (second == null) {
-            second = 0;
-        }
-        dateObj = new Date();
-        dateObj.setSeconds(dateObj.getSeconds() - second);
+    else if (date.includes("SECOND") || date.includes("SECONDS")) {
+        time = new Date(Date.now() - (number * 1000));
     }
     else {
-        dateObj = new Date(date);
+        let split = date.split("-");
+        time = new Date(Number(split[2]), Number(split[0]) - 1, Number(split[1]));
     }
-    return dateObj;
+    return time;
 };
 exports.isLastPage = ($) => {
     let isLast = true;
