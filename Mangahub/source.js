@@ -344,7 +344,7 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangahubInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'Mangahub',
     icon: 'icon.png',
     author: 'Netsky',
@@ -712,15 +712,39 @@ exports.parseViewMore = ($, homepageSectionId) => {
     return manga;
 };
 const parseDate = (date) => {
+    date = date.toUpperCase();
     let dateObj;
-    if (["less than an hour", "just now"].includes(date)) {
+    if (["LESS THAN AN HOUR", "JUST NOW"].includes(date)) {
         dateObj = new Date();
     }
-    else if (date.includes("Yesterday")) {
+    else if (date.includes("YEARS")) {
+        let years = Number.parseInt(date.match("[0-9]*")[0]);
+        dateObj = new Date();
+        dateObj.setDate(dateObj.getDate() - (years * 365));
+    }
+    else if (date.includes("YEAR")) {
+        dateObj = new Date();
+        dateObj.setDate(dateObj.getDate() - 365);
+    }
+    else if (date.includes("WEEK")) {
+        dateObj = new Date();
+        dateObj.setDate(dateObj.getDate() - 7);
+    }
+    else if (date.includes("WEEKS")) {
+        let weeks = Number.parseInt(date.match("[0-9]*")[0]);
+        dateObj = new Date();
+        dateObj.setDate(dateObj.getDate() - (weeks * 7));
+    }
+    else if (date.includes("DAYS")) {
+        let days = Number.parseInt(date.match("[0-9]*")[0]);
+        dateObj = new Date();
+        dateObj.setDate(dateObj.getDate() - days);
+    }
+    else if (date.includes("DAY")) {
         dateObj = new Date();
         dateObj.setDate(dateObj.getDate() - 1);
     }
-    else if (date.includes("hour")) {
+    else if (date.includes("HOUR")) {
         let hour = Number.parseInt(date.match("[0-9]*")[0]);
         if (hour == null) {
             hour = 0;
@@ -728,7 +752,7 @@ const parseDate = (date) => {
         dateObj = new Date();
         dateObj.setHours(dateObj.getHours() - hour);
     }
-    else if (date.includes("minute")) {
+    else if (date.includes("MINUTE")) {
         let minute = Number.parseInt(date.match("[0-9]*")[0]);
         if (minute == null) {
             minute = 0;
@@ -736,7 +760,7 @@ const parseDate = (date) => {
         dateObj = new Date();
         dateObj.setMinutes(dateObj.getMinutes() - minute);
     }
-    else if (date.includes("second")) {
+    else if (date.includes("SECOND")) {
         let second = Number.parseInt(date.match("[0-9]*")[0]);
         if (second == null) {
             second = 0;
