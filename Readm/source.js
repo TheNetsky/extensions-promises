@@ -341,7 +341,7 @@ const ReadmParser_1 = require("./ReadmParser");
 const RM_DOMAIN = 'https://readm.org';
 const method = 'GET';
 exports.ReadmInfo = {
-    version: '1.0.1',
+    version: '1.0.2',
     name: 'Readm',
     icon: 'icon.png',
     author: 'Netsky',
@@ -616,14 +616,14 @@ exports.parseUpdatedManga = ($, time, ids) => {
     let loadMore = true;
     for (let p of $("div.poster.poster-xs", $("ul.clearfix.latest-updates").first()).toArray()) {
         const id = (_b = (_a = $('a', p).attr('href')) === null || _a === void 0 ? void 0 : _a.split('manga/').pop()) !== null && _b !== void 0 ? _b : '';
-        const mangaTime = parseDate((_c = $("span.date", p).text().trim()) !== null && _c !== void 0 ? _c : "");
-        if (mangaTime > time) {
+        const mangaDate = parseDate((_c = $("span.date", p).text().trim()) !== null && _c !== void 0 ? _c : "");
+        if (mangaDate > time) {
             if (ids.includes(id)) {
                 updatedManga.push(id);
             }
-        }
-        else {
-            loadMore = false;
+            else {
+                loadMore = false;
+            }
         }
     }
     return {

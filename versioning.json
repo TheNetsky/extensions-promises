@@ -7,7 +7,7 @@
             "author": "Netsky",
             "desc": "Extension that pulls manga from Fanfox aka Mangafox.",
             "website": "http://github.com/TheNetsky",
-            "version": "1.0.6",
+            "version": "1.0.7",
             "icon": "icon.png",
             "tags": [
                 {
@@ -23,7 +23,7 @@
             "author": "TheNetsky",
             "desc": "Extension that pulls manga from MangaHere.",
             "website": "http://github.com/TheNetsky",
-            "version": "1.0.4",
+            "version": "1.0.5",
             "icon": "icon.png",
             "tags": [
                 {
@@ -39,7 +39,7 @@
             "author": "TheNetsky",
             "desc": "Extension that pulls manga from MangaKatana.",
             "website": "http://github.com/TheNetsky",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "icon": "icon.png",
             "tags": [
                 {
@@ -75,7 +75,7 @@
             "author": "Netsky",
             "desc": "Extension that pulls manga from Readm.",
             "website": "https://github.com/TheNetsky",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "icon": "icon.png",
             "tags": [
                 {

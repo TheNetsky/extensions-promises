@@ -345,7 +345,7 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangaHereInfo = {
-    version: '1.0.4',
+    version: '1.0.5',
     name: 'MangaHere',
     icon: 'icon.png',
     author: 'Netsky',
@@ -631,9 +631,9 @@ exports.parseUpdatedManga = ($, time, ids) => {
             if (ids.includes(id)) {
                 updatedManga.push(id);
             }
-        }
-        else {
-            loadMore = false;
+            else {
+                loadMore = false;
+            }
         }
     }
     return {
