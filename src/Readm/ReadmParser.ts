@@ -119,9 +119,9 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
     if (mangaDate > time) {
       if (ids.includes(id)) {
         updatedManga.push(id);
-      } else {
-        loadMore = false;
       }
+    } else {
+      loadMore = false;
     }
   }
   return {

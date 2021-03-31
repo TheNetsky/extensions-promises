@@ -19,7 +19,7 @@ const RM_DOMAIN = 'https://readm.org'
 const method = 'GET'
 
 export const ReadmInfo: SourceInfo = {
-  version: '1.0.2',
+  version: '1.0.3',
   name: 'Readm',
   icon: 'icon.png',
   author: 'Netsky',
