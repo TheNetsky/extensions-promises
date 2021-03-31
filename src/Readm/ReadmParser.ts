@@ -115,13 +115,13 @@ export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): 
 
   for (let p of $("div.poster.poster-xs", $("ul.clearfix.latest-updates").first()).toArray()) {
     const id = $('a', p).attr('href')?.split('manga/').pop() ?? '';
-    const mangaTime = parseDate($("span.date", p).text().trim() ?? "");
-    if (mangaTime > time) {
+    const mangaDate = parseDate($("span.date", p).text().trim() ?? "");
+    if (mangaDate > time) {
       if (ids.includes(id)) {
         updatedManga.push(id);
+      } else {
+        loadMore = false;
       }
-    } else {
-      loadMore = false;
     }
   }
   return {
