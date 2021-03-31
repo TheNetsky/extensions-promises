@@ -341,7 +341,7 @@ const ReadmParser_1 = require("./ReadmParser");
 const RM_DOMAIN = 'https://readm.org';
 const method = 'GET';
 exports.ReadmInfo = {
-    version: '1.0.2',
+    version: '1.0.3',
     name: 'Readm',
     icon: 'icon.png',
     author: 'Netsky',
@@ -621,9 +621,9 @@ exports.parseUpdatedManga = ($, time, ids) => {
             if (ids.includes(id)) {
                 updatedManga.push(id);
             }
-            else {
-                loadMore = false;
-            }
+        }
+        else {
+            loadMore = false;
         }
     }
     return {
