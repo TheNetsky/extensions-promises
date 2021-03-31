@@ -492,7 +492,6 @@ class MangaHere extends paperback_extensions_common_1.Source {
                 cookies: this.cookies,
                 param: `page=${page}${search}`
             });
-            console.log(`${MH_DOMAIN}/search?page=${page}${search}`);
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
             const manga = MangaHereParser_1.parseSearch($);

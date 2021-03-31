@@ -866,7 +866,6 @@ exports.isLastPage = ($) => {
     lastPage = lastPage.sort((a, b) => b - a);
     if (!current || !lastPage[0] || current >= lastPage[0])
         isLast = true;
-    console.log(isLast);
     return isLast;
 };
 
