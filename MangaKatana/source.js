@@ -344,7 +344,7 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangaKatanaInfo = {
-    version: '1.0.2',
+    version: '1.0.3',
     name: 'MangaKatana',
     icon: 'icon.png',
     author: 'Netsky',
@@ -628,9 +628,9 @@ exports.parseUpdatedManga = ($, time, ids) => {
             if (ids.includes(id)) {
                 updatedManga.push(id);
             }
-            else {
-                loadMore = false;
-            }
+        }
+        else {
+            loadMore = false;
         }
     }
     return {
