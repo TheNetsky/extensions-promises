@@ -58,16 +58,15 @@ export const parseChapters = ($: CheerioStatic, mangaId: string): Chapter[] => {
   for (const elem of $("div.season_start").toArray()) {
     const title = $("h6.truncate", elem).first().text().trim() ?? "";
     const chapterId = $('a', elem).attr('href')?.split(mangaId + "/").pop() ?? '';
-    const chapterNumber = Number(title.split("Chapter ")[1].split("-")[0]);
+    const chapterNumber = title.split("Chapter ")[1].split("-")[0] ?? 0;
     const date = parseDate($("td.episode-date", elem)?.text() ?? "");
-    if (isNaN(chapterNumber)) continue;
 
     chapters.push(createChapter({
       id: chapterId,
       mangaId,
       name: title,
       langCode: LanguageCode.ENGLISH,
-      chapNum: chapterNumber,
+      chapNum: Number(chapterNumber),
       time: date,
     }))
   }
