@@ -236,10 +236,6 @@ var LanguageCode;
 })(LanguageCode = exports.LanguageCode || (exports.LanguageCode = {}));
 
 },{}],10:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],11:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MangaStatus = void 0;
@@ -249,7 +245,11 @@ var MangaStatus;
     MangaStatus[MangaStatus["COMPLETED"] = 0] = "COMPLETED";
 })(MangaStatus = exports.MangaStatus || (exports.MangaStatus = {}));
 
-},{}],13:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+arguments[4][5][0].apply(exports,arguments)
+},{"dup":5}],12:[function(require,module,exports){
+arguments[4][5][0].apply(exports,arguments)
+},{"dup":5}],13:[function(require,module,exports){
 arguments[4][5][0].apply(exports,arguments)
 },{"dup":5}],14:[function(require,module,exports){
 arguments[4][5][0].apply(exports,arguments)
@@ -323,7 +323,7 @@ __exportStar(require("./TrackObject"), exports);
 __exportStar(require("./OAuth"), exports);
 __exportStar(require("./UserForm"), exports);
 
-},{"./Chapter":6,"./ChapterDetails":5,"./Constants":7,"./HomeSection":8,"./Languages":9,"./Manga":12,"./MangaTile":10,"./MangaUpdate":11,"./OAuth":13,"./PagedResults":14,"./RequestHeaders":15,"./RequestManager":16,"./RequestObject":17,"./ResponseObject":18,"./SearchRequest":19,"./SourceInfo":20,"./SourceTag":21,"./TagSection":22,"./TrackObject":23,"./UserForm":24}],26:[function(require,module,exports){
+},{"./Chapter":5,"./ChapterDetails":6,"./Constants":7,"./HomeSection":8,"./Languages":9,"./Manga":10,"./MangaTile":11,"./MangaUpdate":12,"./OAuth":13,"./PagedResults":14,"./RequestHeaders":15,"./RequestManager":16,"./RequestObject":17,"./ResponseObject":18,"./SearchRequest":19,"./SourceInfo":20,"./SourceTag":21,"./TagSection":22,"./TrackObject":23,"./UserForm":24}],26:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
