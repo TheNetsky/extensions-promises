@@ -344,7 +344,7 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangahubInfo = {
-    version: '1.0.3',
+    version: '1.0.4',
     name: 'Mangahub',
     icon: 'icon.png',
     author: 'Netsky',
@@ -401,7 +401,7 @@ class Mangahub extends paperback_extensions_common_1.Source {
             const data = Object(response.data);
             const rawPages = JSON.parse(data.chapter.pages);
             const pages = [];
-            for (var i in rawPages) {
+            for (let i in rawPages) {
                 pages.push("https://img.mghubcdn.com/file/imghub/" + rawPages[i]);
             }
             return createChapterDetails({
@@ -529,7 +529,7 @@ exports.parseMangaDetails = ($, mangaId) => {
     const description = (_o = (_m = (_l = $("div#noanim-content-tab-pane-99 p.ZyMp7")) === null || _l === void 0 ? void 0 : _l.first()) === null || _m === void 0 ? void 0 : _m.text()) !== null && _o !== void 0 ? _o : "";
     const rawStatus = (_r = (_q = (_p = $("._3QCtP > div:nth-child(2) > div:nth-child(3) > span:nth-child(2)")) === null || _p === void 0 ? void 0 : _p.first()) === null || _q === void 0 ? void 0 : _q.text()) === null || _r === void 0 ? void 0 : _r.trim();
     let hentai = false;
-    let arrayTags = [];
+    const arrayTags = [];
     $("._3Czbn a").each((i, tag) => {
         var _a, _b;
         const label = $(tag).text().trim();
@@ -571,10 +571,8 @@ exports.parseChapters = ($, mangaId) => {
         const number = $("span._8Qtbo", elem).text().match("#([0-9]\\S*)+")[1];
         const title = "Chapter " + number;
         const chapterId = "chapter-" + number;
-        const chapterNumber = Number(number);
+        const chapterNumber = Number(number !== null && number !== void 0 ? number : 0);
         const date = parseDate((_b = (_a = $("small.UovLc", elem)) === null || _a === void 0 ? void 0 : _a.text()) !== null && _b !== void 0 ? _b : "");
-        if (isNaN(chapterNumber))
-            continue;
         chapters.push(createChapter({
             id: chapterId,
             mangaId,
@@ -675,7 +673,6 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
 exports.generateSearch = (query) => {
     var _a;
     let search = (_a = query.title) !== null && _a !== void 0 ? _a : "";
-    search = search.replace(/im/i, "I'm");
     return encodeURI(search);
 };
 exports.parseSearch = ($) => {
