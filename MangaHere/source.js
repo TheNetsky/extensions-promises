@@ -345,7 +345,7 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangaHereInfo = {
-    version: '1.0.6',
+    version: '1.0.9',
     name: 'MangaHere',
     icon: 'icon.png',
     author: 'Netsky',
@@ -490,7 +490,7 @@ class MangaHere extends paperback_extensions_common_1.Source {
                 method,
                 headers,
                 cookies: this.cookies,
-                param: `page=${page}${search}`
+                param: `title=${search}&page=${page}`
             });
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
@@ -570,29 +570,23 @@ exports.parseMangaDetails = ($, mangaId) => {
     });
 };
 exports.parseChapters = ($, mangaId) => {
-    var _a, _b;
+    var _a, _b, _c;
     const chapters = [];
     const rawChapters = $('div#chapterlist ul li').children('a').toArray().reverse();
     const chapterIdRegex = new RegExp('\\/manga\\/[a-zA-Z0-9_]*\\/(.*)\\/');
     const chapterNumberRegex = new RegExp('c([0-9.]+)');
-    const volumeRegex = new RegExp('Vol.(\\d+)');
     for (let element of rawChapters) {
         const title = (_a = $('p.title3', element).html()) !== null && _a !== void 0 ? _a : '';
         const date = parseDate((_b = $('p.title2', element).html()) !== null && _b !== void 0 ? _b : '');
         const chapterId = element.attribs['href'].match(chapterIdRegex)[1];
-        const chapterNumber = Number("0" + chapterId.match(chapterNumberRegex)[1]);
-        const volMatch = title.match(volumeRegex);
-        const volume = volMatch != null && volMatch.length > 0 ? Number(volMatch[1]) : undefined;
-        if (isNaN(chapterNumber))
-            continue;
+        const chapterNumber = (_c = chapterId.match(chapterNumberRegex)[1]) !== null && _c !== void 0 ? _c : 0;
         chapters.push(createChapter({
             id: chapterId,
             mangaId,
             name: title,
             langCode: paperback_extensions_common_1.LanguageCode.ENGLISH,
-            chapNum: chapterNumber,
+            chapNum: Number(chapterNumber),
             time: date,
-            volume: volume
         }));
     }
     return chapters;
@@ -724,9 +718,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
 exports.generateSearch = (query) => {
     var _a;
     let search = (_a = query.title) !== null && _a !== void 0 ? _a : "";
-    search = search.replace(/\s+/g, "+");
-    search = `&title&genres&nogenres&sort&stype=1&name=${search}&type=0&author_method=cw&author&artist_method=cw&artist&rating_method=eq&rating&released_method=eq&released&st=0`;
-    return search;
+    return encodeURI(search);
 };
 exports.parseSearch = ($) => {
     const mangas = [];
@@ -854,16 +846,16 @@ const parseDate = (date) => {
 };
 exports.isLastPage = ($) => {
     let isLast = false;
-    const current = Number($("a.active", ".pager-list-left").text());
-    let lastPage = [];
-    for (const p of $("a", ".pager-list-left").toArray()) {
-        let page = Number($(p).text());
-        if (isNaN(page))
+    const pages = [];
+    for (const page of $("a", ".pager-list-left").toArray()) {
+        const p = Number($(page).text().trim());
+        if (isNaN(p))
             continue;
-        lastPage.push(page);
+        pages.push(p);
     }
-    lastPage = lastPage.sort((a, b) => b - a);
-    if (!current || !lastPage[0] || current >= lastPage[0])
+    const lastPage = Math.max(...pages);
+    const currentPage = Number($("a.active", ".pager-list-left").text().trim());
+    if (currentPage >= lastPage)
         isLast = true;
     return isLast;
 };
