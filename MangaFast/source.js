@@ -341,7 +341,7 @@ const MangaFastParser_1 = require("./MangaFastParser");
 const MF_DOMAIN = 'https://mangafast.net';
 const method = 'GET';
 exports.MangaFastInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'MangaFast',
     icon: 'icon.png',
     author: 'Netsky',
@@ -382,7 +382,7 @@ class MangaFast extends paperback_extensions_common_1.Source {
             let metadata = { 'mangaId': mangaId, 'chapterId': chapterId, 'nextPage': false, 'page': 1 };
             const request = createRequestObject({
                 url: `${MF_DOMAIN}/${chapterId}`,
-                method: "GET",
+                method: method,
                 metadata: metadata,
             });
             const response = yield this.requestManager.schedule(request, 1);
@@ -503,6 +503,7 @@ exports.parseMangaDetails = ($, mangaId) => {
     var _a, _b, _c, _d;
     const titles = [];
     titles.push($("td:contains(Comic Title)").next().text().trim()); //Main English title
+    const author = $("td:contains(Author)").next().text().trim();
     const image = (_a = $("img.shadow", "div.text-center.ims").attr('src')) !== null && _a !== void 0 ? _a : "";
     const description = $("p.desc").text().trim();
     let hentai = false;
@@ -514,9 +515,8 @@ exports.parseMangaDetails = ($, mangaId) => {
             hentai = true;
         arrayTags.push({ id: id, label: label });
     }
-    let tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
-    const author = $("td:contains(Author)").next().text().trim();
-    let rawStatus = $("td:contains(Status)").next().text().trim();
+    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+    const rawStatus = $("td:contains(Status)").next().text().trim();
     let status = paperback_extensions_common_1.MangaStatus.ONGOING;
     switch (rawStatus.toUpperCase()) {
         case 'ONGOING':
@@ -574,7 +574,7 @@ exports.parseChapterDetails = ($, mangaId, chapterId) => {
             continue;
         pages.push(image);
     }
-    let chapterDetails = createChapterDetails({
+    const chapterDetails = createChapterDetails({
         id: chapterId,
         mangaId: mangaId,
         pages: pages,
@@ -738,7 +738,7 @@ exports.parseSearch = ($) => {
     var _a, _b, _c, _d, _e;
     const mangas = [];
     const collectedIds = [];
-    for (let obj of $(".list-content .ls4").toArray()) {
+    for (const obj of $(".list-content .ls4").toArray()) {
         const id = (_b = (_a = $("a", obj).attr('href')) === null || _a === void 0 ? void 0 : _a.split("read/")[1].replace("/", "")) !== null && _b !== void 0 ? _b : "";
         const title = $("a", obj).attr('title');
         const image = (_d = (_c = $("img", obj).attr('src')) === null || _c === void 0 ? void 0 : _c.split("?")[0]) !== null && _d !== void 0 ? _d : "";

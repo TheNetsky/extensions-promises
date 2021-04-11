@@ -345,7 +345,7 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangaHereInfo = {
-    version: '1.0.9',
+    version: '1.0.10',
     name: 'MangaHere',
     icon: 'icon.png',
     author: 'Netsky',
@@ -396,7 +396,7 @@ class MangaHere extends paperback_extensions_common_1.Source {
         return __awaiter(this, void 0, void 0, function* () {
             const request = createRequestObject({
                 url: `${MH_DOMAIN_MOBILE}/roll_manga/${mangaId}/${chapterId}`,
-                method: "GET",
+                method: method,
                 cookies: this.cookies
             });
             const response = yield this.requestManager.schedule(request, 1);
@@ -523,50 +523,48 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isLastPage = exports.parseTags = exports.parseViewMore = exports.parseSearch = exports.generateSearch = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 exports.parseMangaDetails = ($, mangaId) => {
-    var _a;
+    var _a, _b, _c;
     const tagRegexp = new RegExp('\\/directory\\/(.*)\\/');
-    const image = (_a = $('.detail-info-cover-img', $('.detail-info-cover')).attr('src')) !== null && _a !== void 0 ? _a : '';
     const details = $('.detail-info');
     const title = $('span.detail-info-right-title-font', details).text().trim();
-    const rawStatus = $('.detail-info-right-title-tip', details).text().trim();
+    const image = (_a = $('.detail-info-cover-img', $('.detail-info-cover')).attr('src')) !== null && _a !== void 0 ? _a : '';
     const rating = $('span.item-score', details).text().trim().replace(',', '.');
     const author = $('p.detail-info-right-say a', details).text().trim();
-    let hentai = false;
     const description = $('p.fullcontent').text().trim();
-    const titles = [];
-    titles.push(title);
-    let arrayTags = [];
-    $('a', '.detail-info-right-tag-list').each((i, tag) => {
-        var _a, _b;
-        const id = (_b = (_a = $(tag).attr('href')) === null || _a === void 0 ? void 0 : _a.match(tagRegexp)[1]) !== null && _b !== void 0 ? _b : "";
+    let hentai = false;
+    const arrayTags = [];
+    for (const tag of $("a", ".detail-info-right-tag-list").toArray()) {
+        const id = (_c = (_b = $(tag).attr('href')) === null || _b === void 0 ? void 0 : _b.match(tagRegexp)[1]) !== null && _c !== void 0 ? _c : "";
         const label = $(tag).text().trim();
-        if (["Adult", "Smut", "Mature"].includes(label))
+        if (["ADULT", "SMUT", "MATURE"].includes(label.toUpperCase()))
             hentai = true;
         arrayTags.push({ id: id, label: label });
-    });
+    }
+    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+    const rawStatus = $('.detail-info-right-title-tip', details).text().trim();
     let status = paperback_extensions_common_1.MangaStatus.ONGOING;
-    switch (rawStatus) {
-        case 'Ongoing':
+    switch (rawStatus.toUpperCase()) {
+        case 'ONGOING':
             status = paperback_extensions_common_1.MangaStatus.ONGOING;
             break;
-        case 'Completed':
+        case 'COMPLETED':
             status = paperback_extensions_common_1.MangaStatus.COMPLETED;
             break;
         default:
             status = paperback_extensions_common_1.MangaStatus.ONGOING;
             break;
     }
-    let tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
     return createManga({
         id: mangaId,
-        titles: titles,
+        titles: [title],
         image,
         rating: Number(rating),
         status: status,
         author: author,
         tags: tagSections,
         desc: description,
-        hentai: hentai
+        //hentai: hentai
+        hentai: false //MangaDex down
     });
 };
 exports.parseChapters = ($, mangaId) => {
@@ -575,10 +573,10 @@ exports.parseChapters = ($, mangaId) => {
     const rawChapters = $('div#chapterlist ul li').children('a').toArray().reverse();
     const chapterIdRegex = new RegExp('\\/manga\\/[a-zA-Z0-9_]*\\/(.*)\\/');
     const chapterNumberRegex = new RegExp('c([0-9.]+)');
-    for (let element of rawChapters) {
-        const title = (_a = $('p.title3', element).html()) !== null && _a !== void 0 ? _a : '';
-        const date = parseDate((_b = $('p.title2', element).html()) !== null && _b !== void 0 ? _b : '');
-        const chapterId = element.attribs['href'].match(chapterIdRegex)[1];
+    for (const elem of rawChapters) {
+        const title = (_a = $('p.title3', elem).html()) !== null && _a !== void 0 ? _a : '';
+        const date = parseDate((_b = $('p.title2', elem).html()) !== null && _b !== void 0 ? _b : '');
+        const chapterId = elem.attribs['href'].match(chapterIdRegex)[1];
         const chapterNumber = (_c = chapterId.match(chapterNumberRegex)[1]) !== null && _c !== void 0 ? _c : 0;
         chapters.push(createChapter({
             id: chapterId,
@@ -594,14 +592,14 @@ exports.parseChapters = ($, mangaId) => {
 exports.parseChapterDetails = ($, mangaId, chapterId) => {
     const pages = [];
     const rawPages = $('div#viewer').children('img').toArray();
-    for (let page of rawPages) {
+    for (const page of rawPages) {
         let url = page.attribs['data-original'];
         if (url.startsWith("//")) {
             url = "https:" + url;
         }
         pages.push(url);
     }
-    let chapterDetails = createChapterDetails({
+    const chapterDetails = createChapterDetails({
         id: chapterId,
         mangaId: mangaId,
         pages: pages,
@@ -615,7 +613,7 @@ exports.parseUpdatedManga = ($, time, ids) => {
     let loadMore = true;
     const idRegExp = new RegExp('\\/manga\\/(.*)\\/');
     const panel = $(".manga-list-4.mt15");
-    for (let obj of $('.manga-list-4-list > li', panel).toArray()) {
+    for (const obj of $('.manga-list-4-list > li', panel).toArray()) {
         const id = (_b = (_a = $('a', obj).first().attr('href')) === null || _a === void 0 ? void 0 : _a.match(idRegExp)[1]) !== null && _b !== void 0 ? _b : "";
         const dateContext = $('.manga-list-4-item-subtitle', $(obj));
         const date = $('span', dateContext).text();
@@ -648,7 +646,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
     const beingReadMangas = hotMangas.next();
     const newMangas = $('ul.manga-list-1-list');
     const latestMangas = $('ul.manga-list-4-list');
-    for (let manga of $('li', hotMangas).toArray()) {
+    for (const manga of $('li', hotMangas).toArray()) {
         const id = (_b = (_a = $('a', manga).first().attr('href')) === null || _a === void 0 ? void 0 : _a.match(idRegExp)[1]) !== null && _b !== void 0 ? _b : "";
         const image = (_c = $('img', manga).first().attr('src')) !== null && _c !== void 0 ? _c : "";
         const title = $('.manga-list-1-item-title', manga).text().trim();
@@ -664,7 +662,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
     }
     sections[0].items = hotManga;
     sectionCallback(sections[0]);
-    for (let manga of $('li', beingReadMangas).toArray()) {
+    for (const manga of $('li', beingReadMangas).toArray()) {
         const id = (_e = (_d = $('a', manga).first().attr('href')) === null || _d === void 0 ? void 0 : _d.match(idRegExp)[1]) !== null && _e !== void 0 ? _e : "";
         const image = (_f = $('img', manga).first().attr('src')) !== null && _f !== void 0 ? _f : "";
         const title = $('.manga-list-1-item-title', manga).text().trim();
@@ -680,7 +678,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
     }
     sections[1].items = beingReadManga;
     sectionCallback(sections[1]);
-    for (let manga of $('li', newMangas).toArray()) {
+    for (const manga of $('li', newMangas).toArray()) {
         const id = (_h = (_g = $('a', manga).first().attr('href')) === null || _g === void 0 ? void 0 : _g.match(idRegExp)[1]) !== null && _h !== void 0 ? _h : "";
         const image = (_j = $('img', manga).first().attr('src')) !== null && _j !== void 0 ? _j : "";
         const title = $('.manga-list-1-item-title', manga).text().trim();
@@ -696,7 +694,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
     }
     sections[2].items = newManga;
     sectionCallback(sections[2]);
-    for (let manga of $('.manga-list-4-list > li', latestMangas).toArray()) {
+    for (const manga of $('.manga-list-4-list > li', latestMangas).toArray()) {
         const id = (_l = (_k = $('a', manga).first().attr('href')) === null || _k === void 0 ? void 0 : _k.match(idRegExp)[1]) !== null && _l !== void 0 ? _l : "";
         const image = (_m = $('img', manga).first().attr('src')) !== null && _m !== void 0 ? _m : "";
         const title = $('.manga-list-4-item-title', manga).text().trim();
@@ -756,7 +754,7 @@ exports.parseViewMore = ($, homepageSectionId) => {
     if (homepageSectionId === "latest_updates") {
         const collectedIds = [];
         const panel = $(".manga-list-4.mt15");
-        for (let p of $('.manga-list-4-list > li', panel).toArray()) {
+        for (const p of $('.manga-list-4-list > li', panel).toArray()) {
             const id = (_b = (_a = $('a', p).first().attr('href')) === null || _a === void 0 ? void 0 : _a.match(idRegExp)[1]) !== null && _b !== void 0 ? _b : "";
             const image = (_c = $('img', p).first().attr('src')) !== null && _c !== void 0 ? _c : "";
             const title = $('.manga-list-4-item-title', p).text().trim();
@@ -778,7 +776,7 @@ exports.parseViewMore = ($, homepageSectionId) => {
     else {
         const collectedIds = [];
         const panel = $('.manga-list-1');
-        for (let p of $('li', panel).toArray()) {
+        for (const p of $('li', panel).toArray()) {
             const id = (_e = (_d = $('a', p).first().attr('href')) === null || _d === void 0 ? void 0 : _d.match(idRegExp)[1]) !== null && _e !== void 0 ? _e : "";
             const image = (_f = $('img', p).first().attr('src')) !== null && _f !== void 0 ? _f : '';
             const title = $('.manga-list-1-item-title', p).text().trim();
@@ -807,42 +805,41 @@ exports.parseTags = ($) => {
     return tagSections;
 };
 const parseDate = (date) => {
-    let dateObj;
-    if (date.includes("Today")) {
-        dateObj = new Date();
+    var _a;
+    date = date.toUpperCase();
+    let time;
+    let number = Number(((_a = /\d*/.exec(date)) !== null && _a !== void 0 ? _a : [])[0]);
+    if (date.includes("LESS THAN AN HOUR") || date.includes("JUST NOW")) {
+        time = new Date(Date.now());
     }
-    else if (date.includes("Yesterday")) {
-        dateObj = new Date();
-        dateObj.setDate(dateObj.getDate() - 1);
+    else if (date.includes("YEAR") || date.includes("YEARS")) {
+        time = new Date(Date.now() - (number * 31556952000));
     }
-    else if (date.includes("hour")) {
-        let hour = Number.parseInt(date.match("[0-9]*")[0]);
-        if (hour == null) {
-            hour = 0;
-        }
-        dateObj = new Date();
-        dateObj.setHours(dateObj.getHours() - hour);
+    else if (date.includes("MONTH") || date.includes("MONTHS")) {
+        time = new Date(Date.now() - (number * 2592000000));
     }
-    else if (date.includes("minute")) {
-        let minute = Number.parseInt(date.match("[0-9]*")[0]);
-        if (minute == null) {
-            minute = 0;
-        }
-        dateObj = new Date();
-        dateObj.setMinutes(dateObj.getMinutes() - minute);
+    else if (date.includes("WEEK") || date.includes("WEEKS")) {
+        time = new Date(Date.now() - (number * 604800000));
     }
-    else if (date.includes("second")) {
-        let second = Number.parseInt(date.match("[0-9]*")[0]);
-        if (second == null) {
-            second = 0;
-        }
-        dateObj = new Date();
-        dateObj.setSeconds(dateObj.getSeconds() - second);
+    else if (date.includes("YESERDAY")) {
+        time = new Date(Date.now() - 86400000);
+    }
+    else if (date.includes("DAY") || date.includes("DAYS")) {
+        time = new Date(Date.now() - (number * 86400000));
+    }
+    else if (date.includes("HOUR") || date.includes("HOURS")) {
+        time = new Date(Date.now() - (number * 3600000));
+    }
+    else if (date.includes("MINUTE") || date.includes("MINUTES")) {
+        time = new Date(Date.now() - (number * 60000));
+    }
+    else if (date.includes("SECOND") || date.includes("SECONDS")) {
+        time = new Date(Date.now() - (number * 1000));
     }
     else {
-        dateObj = new Date(date);
+        time = new Date(date);
     }
-    return dateObj;
+    return time;
 };
 exports.isLastPage = ($) => {
     let isLast = false;

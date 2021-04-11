@@ -341,7 +341,7 @@ const MangaRawParser_1 = require("./MangaRawParser");
 const MR_DOMAIN = 'https://www.manga-raw.club';
 const method = 'GET';
 exports.MangaRawInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'MangaRaw',
     icon: 'icon.png',
     author: 'Netsky',
@@ -387,7 +387,7 @@ class MangaRaw extends paperback_extensions_common_1.Source {
             let metadata = { 'mangaId': mangaId, 'chapterId': chapterId, 'nextPage': false, 'page': 1 };
             const request = createRequestObject({
                 url: `${MR_DOMAIN}/reader/en/${chapterId}`,
-                method: "GET",
+                method: method,
                 metadata: metadata,
             });
             const response = yield this.requestManager.schedule(request, 1);
@@ -453,7 +453,6 @@ class MangaRaw extends paperback_extensions_common_1.Source {
                 method,
                 param,
             });
-            this.getTags();
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
             const manga = MangaRawParser_1.parseViewMore($, homepageSectionId);
@@ -508,6 +507,7 @@ exports.parseMangaDetails = ($, mangaId) => {
     for (const title of altTitles) {
         titles.push(title);
     }
+    const author = $("span", "div.author").next().text().trim();
     const image = "https://www.manga-raw.club" + $("img", "div.fixed-img").attr('data-src');
     const description = $("div.content", "div.summary").text().trim();
     let hentai = false;
@@ -515,24 +515,24 @@ exports.parseMangaDetails = ($, mangaId) => {
     for (const tag of $("li", "div.categories").toArray()) {
         const label = $(tag).text().trim();
         const id = encodeURI((_c = (_b = (_a = $("a", tag).attr("href")) === null || _a === void 0 ? void 0 : _a.trim()) === null || _b === void 0 ? void 0 : _b.split("genre=")[1]) !== null && _c !== void 0 ? _c : "");
-        // if (["Adult", "Smut", "Mature"].includes(label)) hentai = true; No hentai on this site
+        if (["ADULT", "SMUT", "MATURE"].includes(label.toUpperCase()))
+            hentai = true;
         arrayTags.push({ id: id, label: label });
     }
-    const author = $("span", "div.author").next().text().trim();
-    let rawStatus = $("small:contains(Status)", "div.header-stats").prev().text().trim();
+    const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
+    const rawStatus = $("small:contains(Status)", "div.header-stats").prev().text().trim();
     let status = paperback_extensions_common_1.MangaStatus.ONGOING;
-    switch (rawStatus) {
-        case 'Ongoing':
+    switch (rawStatus.toUpperCase()) {
+        case 'ONGOING':
             status = paperback_extensions_common_1.MangaStatus.ONGOING;
             break;
-        case 'Completed':
+        case 'COMPLETED':
             status = paperback_extensions_common_1.MangaStatus.COMPLETED;
             break;
         default:
             status = paperback_extensions_common_1.MangaStatus.ONGOING;
             break;
     }
-    let tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
     return createManga({
         id: mangaId,
         titles: titles,
@@ -542,7 +542,8 @@ exports.parseMangaDetails = ($, mangaId) => {
         author: author,
         tags: tagSections,
         desc: description,
-        hentai: hentai
+        //hentai: hentai
+        hentai: false //MangaDex down
     });
 };
 exports.parseChapters = ($, mangaId) => {
@@ -576,7 +577,7 @@ exports.parseChapterDetails = ($, mangaId, chapterId) => {
             image = (_b = $(p).attr("data-src")) !== null && _b !== void 0 ? _b : "";
         pages.push(image);
     }
-    let chapterDetails = createChapterDetails({
+    const chapterDetails = createChapterDetails({
         id: chapterId,
         mangaId: mangaId,
         pages: pages,
