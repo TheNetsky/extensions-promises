@@ -341,7 +341,7 @@ const FunmangaParser_1 = require("./FunmangaParser");
 const FM_DOMAIN = 'https://www.funmanga.com';
 const method = 'GET';
 exports.FunmangaInfo = {
-    version: '1.0.1',
+    version: '1.0.2',
     name: 'Funmanga',
     icon: 'icon.png',
     author: 'Netsky',
@@ -430,8 +430,8 @@ class Funmanga extends paperback_extensions_common_1.Source {
     }
     getHomePageSections(sectionCallback) {
         return __awaiter(this, void 0, void 0, function* () {
-            let section1 = createHomeSection({ id: 'latest_updates', title: 'Latest Updates', view_more: true });
-            let section2 = createHomeSection({ id: 'hot_update', title: 'Hot Updates' }); //Popular Manga Broken on site
+            const section1 = createHomeSection({ id: 'latest_updates', title: 'Latest Updates', view_more: true });
+            const section2 = createHomeSection({ id: 'hot_update', title: 'Hot Updates' }); //Popular Manga Broken on site
             const sections = [section1, section2];
             const request = createRequestObject({
                 url: FM_DOMAIN,
@@ -510,13 +510,14 @@ exports.Funmanga = Funmanga;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseViewMore = exports.generateSearch = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseTags = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
+const FM_DOMAIN = "https://www.funmanga.com";
 exports.parseMangaDetails = ($, mangaId) => {
     var _a, _b, _c;
     const titles = [];
     titles.push($("h5.widget-heading", $("div.content-inner.inner-page")).first().text().trim());
-    const altTitles = $('dt:contains("Alternative Name:")').next().text().trim().replace(" ", "").split(";");
+    const altTitles = $('dt:contains("Alternative Name:")').next().text().split(";");
     for (const t of altTitles) {
-        titles.push(t);
+        titles.push(t.trim());
     }
     const image = (_a = "https:" + $('div.col-md-4 img').attr('src')) !== null && _a !== void 0 ? _a : "";
     const author = $('dt:contains("Author:")').next().text().trim();
@@ -643,7 +644,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         const title = (_a = $('img', manga).first().attr('alt')) !== null && _a !== void 0 ? _a : "";
         const chapterId = (_c = (_b = $('a', manga).attr('href')) === null || _b === void 0 ? void 0 : _b.split('/').pop()) !== null && _c !== void 0 ? _c : '';
         let image = (_e = (_d = $('img', manga).first().attr('src')) === null || _d === void 0 ? void 0 : _d.split("funmanga.com")[1]) !== null && _e !== void 0 ? _e : "";
-        image = "https://www.funmanga.com" + image;
+        image = FM_DOMAIN + image;
         latestManga.push(createMangaTile({
             id: chapterId,
             image: image,
@@ -658,7 +659,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         const title = (_g = (_f = $('a', manga).first().attr('title')) === null || _f === void 0 ? void 0 : _f.split(/- \d+/)[0]) !== null && _g !== void 0 ? _g : "";
         const chapterId = (_j = (_h = $('a', manga).attr('href')) === null || _h === void 0 ? void 0 : _h.match(/funmanga.com\/([^/]*)/)[1]) !== null && _j !== void 0 ? _j : '';
         let image = (_l = (_k = $('img', manga).first().attr('src')) === null || _k === void 0 ? void 0 : _k.split("funmanga.com")[1]) !== null && _l !== void 0 ? _l : "";
-        image = "https://www.funmanga.com" + image;
+        image = FM_DOMAIN + image;
         hotMangaUpdate.push(createMangaTile({
             id: chapterId,
             image: image,
@@ -682,7 +683,7 @@ exports.parseViewMore = ($, homepageSectionId) => {
         const title = (_a = $('img', p).first().attr('alt')) !== null && _a !== void 0 ? _a : "";
         const id = (_c = (_b = $('a', p).attr('href')) === null || _b === void 0 ? void 0 : _b.split('/').pop()) !== null && _c !== void 0 ? _c : '';
         let image = (_e = (_d = $('img', p).first().attr('src')) === null || _d === void 0 ? void 0 : _d.split("funmanga.com")[1]) !== null && _e !== void 0 ? _e : "";
-        image = "https://www.funmanga.com" + image;
+        image = FM_DOMAIN + image;
         manga.push(createMangaTile({
             id,
             image,
@@ -708,7 +709,7 @@ const parseDate = (date) => {
     else if (date.includes("WEEK") || date.includes("WEEKS")) {
         time = new Date(Date.now() - (number * 604800000));
     }
-    else if (date.includes("YESERDAY")) {
+    else if (date.includes("YESTERDAY")) {
         time = new Date(Date.now() - 86400000);
     }
     else if (date.includes("DAY") || date.includes("DAYS")) {

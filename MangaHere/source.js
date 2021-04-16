@@ -345,7 +345,7 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangaHereInfo = {
-    version: '1.0.10',
+    version: '1.0.11',
     name: 'MangaHere',
     icon: 'icon.png',
     author: 'Netsky',
@@ -430,10 +430,10 @@ class MangaHere extends paperback_extensions_common_1.Source {
     }
     getHomePageSections(sectionCallback) {
         return __awaiter(this, void 0, void 0, function* () {
-            let section1 = createHomeSection({ id: 'hot_update', title: 'Hot Manga Releases', view_more: true });
-            let section2 = createHomeSection({ id: 'being_read', title: 'Being Read Right Now' });
-            let section3 = createHomeSection({ id: 'new_manga', title: 'New Manga Releases', view_more: true });
-            let section4 = createHomeSection({ id: 'latest_updates', title: 'Latest Updates', view_more: true });
+            const section1 = createHomeSection({ id: 'hot_update', title: 'Hot Manga Releases', view_more: true });
+            const section2 = createHomeSection({ id: 'being_read', title: 'Being Read Right Now' });
+            const section3 = createHomeSection({ id: 'new_manga', title: 'New Manga Releases', view_more: true });
+            const section4 = createHomeSection({ id: 'latest_updates', title: 'Latest Updates', view_more: true });
             const sections = [section1, section2, section3, section4];
             const request = createRequestObject({
                 url: MH_DOMAIN,
@@ -821,7 +821,7 @@ const parseDate = (date) => {
     else if (date.includes("WEEK") || date.includes("WEEKS")) {
         time = new Date(Date.now() - (number * 604800000));
     }
-    else if (date.includes("YESERDAY")) {
+    else if (date.includes("YESTERDAY")) {
         time = new Date(Date.now() - 86400000);
     }
     else if (date.includes("DAY") || date.includes("DAYS")) {

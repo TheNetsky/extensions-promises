@@ -344,7 +344,7 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangaKatanaInfo = {
-    version: '1.0.5',
+    version: '1.0.6',
     name: 'MangaKatana',
     icon: 'icon.png',
     author: 'Netsky',
@@ -356,10 +356,6 @@ exports.MangaKatanaInfo = {
         {
             text: "Notifications",
             type: paperback_extensions_common_1.TagType.GREEN
-        },
-        {
-            text: "Buggy",
-            type: paperback_extensions_common_1.TagType.RED
         }
     ]
 };
@@ -393,7 +389,7 @@ class MangaKatana extends paperback_extensions_common_1.Source {
         return __awaiter(this, void 0, void 0, function* () {
             const request = createRequestObject({
                 url: `${MK_DOMAIN}/manga/${mangaId}/${chapterId}`,
-                method: "GET",
+                method: method,
             });
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data, { xmlMode: false });
@@ -436,9 +432,9 @@ class MangaKatana extends paperback_extensions_common_1.Source {
     }
     getHomePageSections(sectionCallback) {
         return __awaiter(this, void 0, void 0, function* () {
-            let section1 = createHomeSection({ id: 'hot_update', title: 'Hot Updates' });
-            let section2 = createHomeSection({ id: 'hot_manga', title: 'Hot Manga', view_more: true });
-            let section3 = createHomeSection({ id: 'latest_updates', title: 'Latest Updates', view_more: true });
+            const section1 = createHomeSection({ id: 'hot_update', title: 'Hot Updates' });
+            const section2 = createHomeSection({ id: 'hot_manga', title: 'Hot Manga', view_more: true });
+            const section3 = createHomeSection({ id: 'latest_updates', title: 'Latest Updates', view_more: true });
             const sections = [section1, section2, section3];
             const request = createRequestObject({
                 url: MK_DOMAIN,
@@ -513,9 +509,9 @@ exports.parseMangaDetails = ($, mangaId) => {
     var _a, _b, _c;
     const titles = [];
     titles.push($('h1.heading').first().text().trim());
-    const altTitles = $('div.alt_name').text().trim().replace(" ", "").split(";");
+    const altTitles = $('div.alt_name').text().split(";");
     for (const t of altTitles) {
-        titles.push(t);
+        titles.push(t.trim());
     }
     const image = (_a = $('div.media div.cover img').attr('src')) !== null && _a !== void 0 ? _a : "";
     const author = $('.author').text().trim();
@@ -695,54 +691,45 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
     for (const section of sections)
         sectionCallback(section);
 };
-//Fix this later for more stuff if it works, it works.
 exports.generateSearch = (query) => {
     var _a;
     let search = (_a = query.title) !== null && _a !== void 0 ? _a : "";
     return encodeURI(search);
 };
-/*
-ISSUE!
-- Exact matches will not show any manga in the search results
-*/
 exports.parseSearch = ($) => {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     const mangas = [];
-    try {
-        if ((_a = $('meta[property="$=url"]').attr('content')) === null || _a === void 0 ? void 0 : _a.includes("/manga/")) {
-            const title = (_b = $('h1.heading').first().text().trim()) !== null && _b !== void 0 ? _b : "";
-            const id = (_e = (_d = (_c = $('meta[property$=url]"]').attr('content')) === null || _c === void 0 ? void 0 : _c.split('/')) === null || _d === void 0 ? void 0 : _d.pop()) !== null && _e !== void 0 ? _e : "";
-            const image = (_f = $('div.media div.cover img').attr('src')) !== null && _f !== void 0 ? _f : "";
-            if (id && title) {
+    const collectedIds = [];
+    if ((_a = $('meta[property="og:url"]').attr('content')) === null || _a === void 0 ? void 0 : _a.includes("/manga/")) {
+        const title = (_b = $('h1.heading').first().text().trim()) !== null && _b !== void 0 ? _b : "";
+        const id = (_e = (_d = (_c = $('meta[property$=url]').attr('content')) === null || _c === void 0 ? void 0 : _c.split('/')) === null || _d === void 0 ? void 0 : _d.pop()) !== null && _e !== void 0 ? _e : "";
+        const image = (_f = $('div.media div.cover img').attr('src')) !== null && _f !== void 0 ? _f : "";
+        if (!collectedIds.includes(id) && id && title) {
+            mangas.push(createMangaTile({
+                id,
+                image: image,
+                title: createIconText({ text: title }),
+            }));
+            collectedIds.push(id);
+        }
+    }
+    else {
+        for (const manga of $("div.item", "#book_list").toArray()) {
+            const title = $('.title a', manga).text().trim();
+            const id = (_h = (_g = $('a', manga).attr('href')) === null || _g === void 0 ? void 0 : _g.split('/').pop()) !== null && _h !== void 0 ? _h : '';
+            const image = (_j = $("img", manga).attr('src')) !== null && _j !== void 0 ? _j : "";
+            const subtitle = $('.chapter', manga).first().text().trim();
+            if (!collectedIds.includes(id) && id && title) {
                 mangas.push(createMangaTile({
                     id,
                     image: image,
                     title: createIconText({ text: title }),
+                    subtitleText: createIconText({ text: subtitle }),
                 }));
+                collectedIds.push(id);
             }
+            ;
         }
-        else {
-            const collectedIds = [];
-            for (const manga of $("div.item", "#book_list").toArray()) {
-                const title = $('.title a', manga).text().trim();
-                const id = (_h = (_g = $('a', manga).attr('href')) === null || _g === void 0 ? void 0 : _g.split('/').pop()) !== null && _h !== void 0 ? _h : '';
-                const image = (_j = $("img", manga).attr('src')) !== null && _j !== void 0 ? _j : "";
-                const subtitle = $('.chapter', manga).first().text().trim();
-                if (!collectedIds.includes(id) && id && title) {
-                    mangas.push(createMangaTile({
-                        id,
-                        image: image,
-                        title: createIconText({ text: title }),
-                        subtitleText: createIconText({ text: subtitle }),
-                    }));
-                    collectedIds.push(id);
-                }
-                ;
-            }
-        }
-    }
-    catch (e) {
-        console.log(e);
     }
     return mangas;
 };

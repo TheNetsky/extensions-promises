@@ -341,7 +341,7 @@ const MangaRawParser_1 = require("./MangaRawParser");
 const MR_DOMAIN = 'https://www.manga-raw.club';
 const method = 'GET';
 exports.MangaRawInfo = {
-    version: '1.0.1',
+    version: '1.0.2',
     name: 'MangaRaw',
     icon: 'icon.png',
     author: 'Netsky',
@@ -420,8 +420,8 @@ class MangaRaw extends paperback_extensions_common_1.Source {
     }
     getHomePageSections(sectionCallback) {
         return __awaiter(this, void 0, void 0, function* () {
-            let section1 = createHomeSection({ id: 'new_manga', title: 'New Manga', view_more: true });
-            let section2 = createHomeSection({ id: 'top_manga', title: 'Top Manga', view_more: true });
+            const section1 = createHomeSection({ id: 'new_manga', title: 'New Manga', view_more: true });
+            const section2 = createHomeSection({ id: 'top_manga', title: 'Top Manga', view_more: true });
             const sections = [section1, section2];
             const request = createRequestObject({
                 url: MR_DOMAIN,
@@ -502,14 +502,14 @@ const paperback_extensions_common_1 = require("paperback-extensions-common");
 exports.parseMangaDetails = ($, mangaId) => {
     var _a, _b, _c;
     const titles = [];
-    titles.push($("h1.novel-title.text2row", "div.main-head").text().trim()); //Main English title
+    titles.push(decodeHTMLEntity($("h1.novel-title.text2row", "div.main-head").text().trim())); //Main English title
     const altTitles = $("h2.alternative-title.text1row", "div.main-head").text().trim().split(",");
     for (const title of altTitles) {
-        titles.push(title);
+        titles.push(decodeHTMLEntity(title));
     }
     const author = $("span", "div.author").next().text().trim();
     const image = "https://www.manga-raw.club" + $("img", "div.fixed-img").attr('data-src');
-    const description = $("div.content", "div.summary").text().trim();
+    const description = decodeHTMLEntity($("div.content", "div.summary").text().trim());
     let hentai = false;
     const arrayTags = [];
     for (const tag of $("li", "div.categories").toArray()) {
@@ -621,7 +621,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         newManga.push(createMangaTile({
             id: id,
             image: image,
-            title: createIconText({ text: title }),
+            title: createIconText({ text: decodeHTMLEntity(title) }),
         }));
     }
     sections[0].items = newManga;
@@ -637,7 +637,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         topManga.push(createMangaTile({
             id: id,
             image: image,
-            title: createIconText({ text: title }),
+            title: createIconText({ text: decodeHTMLEntity(title) }),
         }));
     }
     sections[1].items = topManga;
@@ -663,7 +663,7 @@ exports.parseSearch = ($) => {
             mangas.push(createMangaTile({
                 id,
                 image: image,
-                title: createIconText({ text: title }),
+                title: createIconText({ text: decodeHTMLEntity(title) }),
                 subtitleText: createIconText({ text: subtitle }),
             }));
             collectedIds.push(id);
@@ -684,7 +684,7 @@ exports.parseViewMore = ($, homepageSectionId) => {
             manga.push(createMangaTile({
                 id,
                 image: image,
-                title: createIconText({ text: title }),
+                title: createIconText({ text: decodeHTMLEntity(title) }),
                 subtitleText: createIconText({ text: subtitle }),
             }));
             collectedIds.push(id);
@@ -703,6 +703,21 @@ exports.parseTags = ($) => {
     const tagSections = [createTagSection({ id: '0', label: 'genres', tags: arrayTags.map(x => createTag(x)) })];
     return tagSections;
 };
+exports.isLastPage = ($) => {
+    let isLast = false;
+    const pages = [];
+    for (const page of $("li", "ul.pagination").toArray()) {
+        const p = Number($(page).text().trim());
+        if (isNaN(p))
+            continue;
+        pages.push(p);
+    }
+    const lastPage = Math.max(...pages);
+    const currentPage = Number($("li.active").first().text());
+    if (currentPage >= lastPage)
+        isLast = true;
+    return isLast;
+};
 const parseDate = (date) => {
     var _a;
     date = date.toUpperCase();
@@ -720,7 +735,7 @@ const parseDate = (date) => {
     else if (date.includes("WEEK") || date.includes("WEEKS")) {
         time = new Date(Date.now() - (number * 604800000));
     }
-    else if (date.includes("YESERDAY")) {
+    else if (date.includes("YESTERDAY")) {
         time = new Date(Date.now() - 86400000);
     }
     else if (date.includes("DAY") || date.includes("DAYS")) {
@@ -741,20 +756,10 @@ const parseDate = (date) => {
     }
     return time;
 };
-exports.isLastPage = ($) => {
-    let isLast = false;
-    const pages = [];
-    for (const page of $("li", "ul.pagination").toArray()) {
-        const p = Number($(page).text().trim());
-        if (isNaN(p))
-            continue;
-        pages.push(p);
-    }
-    const lastPage = Math.max(...pages);
-    const currentPage = Number($("li.active").first().text());
-    if (currentPage >= lastPage)
-        isLast = true;
-    return isLast;
+const decodeHTMLEntity = (str) => {
+    return str.replace(/&#(\d+);/g, function (match, dec) {
+        return String.fromCharCode(dec);
+    });
 };
 
 },{"paperback-extensions-common":4}]},{},[26])(26)

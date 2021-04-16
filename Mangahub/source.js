@@ -344,7 +344,7 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangahubInfo = {
-    version: '1.0.5',
+    version: '1.0.6',
     name: 'Mangahub',
     icon: 'icon.png',
     author: 'Netsky',
@@ -444,9 +444,9 @@ class Mangahub extends paperback_extensions_common_1.Source {
     }
     getHomePageSections(sectionCallback) {
         return __awaiter(this, void 0, void 0, function* () {
-            let section1 = createHomeSection({ id: 'hot_update', title: 'Hot Updates', view_more: true });
-            let section2 = createHomeSection({ id: 'hot_manga', title: 'Hot Manga', view_more: true });
-            let section3 = createHomeSection({ id: 'latest_updates', title: 'Latest Updates', view_more: true });
+            const section1 = createHomeSection({ id: 'hot_update', title: 'Hot Updates', view_more: true });
+            const section2 = createHomeSection({ id: 'hot_manga', title: 'Hot Manga', view_more: true });
+            const section3 = createHomeSection({ id: 'latest_updates', title: 'Latest Updates', view_more: true });
             const sections = [section1, section2, section3];
             const request = createRequestObject({
                 url: MK_DOMAIN,
@@ -522,11 +522,11 @@ exports.isLastPage = exports.parseViewMore = exports.parseSearch = exports.gener
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 exports.parseMangaDetails = ($, mangaId) => {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
-    const title = $("h1._3xnDj").contents().first().text().trim();
+    const title = decodeHTMLEntity($("h1._3xnDj").contents().first().text().trim());
     const image = (_b = (_a = $("img.img-responsive")) === null || _a === void 0 ? void 0 : _a.attr("src")) !== null && _b !== void 0 ? _b : "";
-    const author = (_f = (_e = (_d = (_c = $("._3QCtP > div:nth-child(2) > div:nth-child(1) > span:nth-child(2)")) === null || _c === void 0 ? void 0 : _c.first()) === null || _d === void 0 ? void 0 : _d.text()) === null || _e === void 0 ? void 0 : _e.trim()) !== null && _f !== void 0 ? _f : "";
-    const artist = (_k = (_j = (_h = (_g = $("._3QCtP > div:nth-child(2) > div:nth-child(2) > span:nth-child(2)")) === null || _g === void 0 ? void 0 : _g.first()) === null || _h === void 0 ? void 0 : _h.text()) === null || _j === void 0 ? void 0 : _j.trim()) !== null && _k !== void 0 ? _k : "";
-    const description = (_o = (_m = (_l = $("div#noanim-content-tab-pane-99 p.ZyMp7")) === null || _l === void 0 ? void 0 : _l.first()) === null || _m === void 0 ? void 0 : _m.text()) !== null && _o !== void 0 ? _o : "";
+    const author = decodeHTMLEntity((_f = (_e = (_d = (_c = $("._3QCtP > div:nth-child(2) > div:nth-child(1) > span:nth-child(2)")) === null || _c === void 0 ? void 0 : _c.first()) === null || _d === void 0 ? void 0 : _d.text()) === null || _e === void 0 ? void 0 : _e.trim()) !== null && _f !== void 0 ? _f : "");
+    const artist = decodeHTMLEntity((_k = (_j = (_h = (_g = $("._3QCtP > div:nth-child(2) > div:nth-child(2) > span:nth-child(2)")) === null || _g === void 0 ? void 0 : _g.first()) === null || _h === void 0 ? void 0 : _h.text()) === null || _j === void 0 ? void 0 : _j.trim()) !== null && _k !== void 0 ? _k : "");
+    const description = decodeHTMLEntity((_o = (_m = (_l = $("div#noanim-content-tab-pane-99 p.ZyMp7")) === null || _l === void 0 ? void 0 : _l.first()) === null || _m === void 0 ? void 0 : _m.text()) !== null && _o !== void 0 ? _o : "");
     let hentai = false;
     const arrayTags = [];
     for (const tag of $("._3Czbn a").toArray()) {
@@ -622,8 +622,8 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         hotMangaUpdate.push(createMangaTile({
             id: id,
             image: image,
-            title: createIconText({ text: title }),
-            subtitleText: createIconText({ text: subtitle }),
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+            subtitleText: createIconText({ text: decodeHTMLEntity(subtitle) }),
         }));
     }
     sections[0].items = hotMangaUpdate;
@@ -641,8 +641,8 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         hotManga.push(createMangaTile({
             id: id,
             image: image,
-            title: createIconText({ text: title }),
-            subtitleText: createIconText({ text: subtitle }),
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+            subtitleText: createIconText({ text: decodeHTMLEntity(subtitle) }),
         }));
     }
     sections[1].items = hotManga;
@@ -661,8 +661,8 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         latestManga.push(createMangaTile({
             id: id,
             image: image,
-            title: createIconText({ text: title }),
-            subtitleText: createIconText({ text: subtitle }),
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+            subtitleText: createIconText({ text: decodeHTMLEntity(subtitle) }),
         }));
     }
     sections[2].items = latestManga;
@@ -688,8 +688,8 @@ exports.parseSearch = ($) => {
             mangas.push(createMangaTile({
                 id,
                 image: image,
-                title: createIconText({ text: title }),
-                subtitleText: createIconText({ text: subtitle }),
+                title: createIconText({ text: decodeHTMLEntity(title) }),
+                subtitleText: createIconText({ text: decodeHTMLEntity(subtitle) }),
             }));
             collectedIds.push(id);
         }
@@ -711,10 +711,17 @@ exports.parseViewMore = ($, homepageSectionId) => {
             id,
             image,
             title: createIconText({ text: title }),
-            subtitleText: createIconText({ text: subtitle }),
+            subtitleText: createIconText({ text: decodeHTMLEntity(subtitle) }),
         }));
     }
     return manga;
+};
+exports.isLastPage = ($) => {
+    let isLast = true;
+    let hasNext = Boolean($("a.btn.btn-primary").text());
+    if (hasNext)
+        isLast = false;
+    return isLast;
 };
 const parseDate = (date) => {
     var _a;
@@ -733,7 +740,7 @@ const parseDate = (date) => {
     else if (date.includes("WEEK") || date.includes("WEEKS")) {
         time = new Date(Date.now() - (number * 604800000));
     }
-    else if (date.includes("YESERDAY")) {
+    else if (date.includes("YESTERDAY")) {
         time = new Date(Date.now() - 86400000);
     }
     else if (date.includes("DAY") || date.includes("DAYS")) {
@@ -754,12 +761,10 @@ const parseDate = (date) => {
     }
     return time;
 };
-exports.isLastPage = ($) => {
-    let isLast = true;
-    let hasNext = Boolean($("a.btn.btn-primary").text());
-    if (hasNext)
-        isLast = false;
-    return isLast;
+const decodeHTMLEntity = (str) => {
+    return str.replace(/&#(\d+);/g, function (match, dec) {
+        return String.fromCharCode(dec);
+    });
 };
 
 },{"paperback-extensions-common":4}]},{},[26])(26)

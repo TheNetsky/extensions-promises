@@ -341,7 +341,7 @@ const MangaFastParser_1 = require("./MangaFastParser");
 const MF_DOMAIN = 'https://mangafast.net';
 const method = 'GET';
 exports.MangaFastInfo = {
-    version: '1.0.1',
+    version: '1.0.2',
     name: 'MangaFast',
     icon: 'icon.png',
     author: 'Netsky',
@@ -418,12 +418,12 @@ class MangaFast extends paperback_extensions_common_1.Source {
       }*/
     getHomePageSections(sectionCallback) {
         return __awaiter(this, void 0, void 0, function* () {
-            let section1 = createHomeSection({ id: 'new_manga', title: 'New Manga' });
-            let section2 = createHomeSection({ id: 'top_manga', title: 'Top Manga' });
-            let section3 = createHomeSection({ id: 'latest_manga_update', title: 'Latest Manga Update' });
-            let section4 = createHomeSection({ id: 'top_weekly', title: 'Top Weekly Comic' });
-            let section5 = createHomeSection({ id: 'latest_manhua_update', title: 'Latest Manhua Update' });
-            let section6 = createHomeSection({ id: 'popular_manga', title: 'Popular Manga' });
+            const section1 = createHomeSection({ id: 'new_manga', title: 'New Manga' });
+            const section2 = createHomeSection({ id: 'top_manga', title: 'Top Manga' });
+            const section3 = createHomeSection({ id: 'latest_manga_update', title: 'Latest Manga Update' });
+            const section4 = createHomeSection({ id: 'top_weekly', title: 'Top Weekly Comic' });
+            const section5 = createHomeSection({ id: 'latest_manhua_update', title: 'Latest Manhua Update' });
+            const section6 = createHomeSection({ id: 'popular_manga', title: 'Popular Manga' });
             const sections = [section1, section2, section3, section4, section5, section6];
             for (const section of sections) {
                 sectionCallback(section);
