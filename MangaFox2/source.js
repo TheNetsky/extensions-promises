@@ -345,7 +345,7 @@ const headers = {
     "content-type": "application/x-www-form-urlencoded"
 };
 exports.MangaFox2Info = {
-    version: '1.0.11',
+    version: '1.0.12',
     name: 'MangaFox2',
     icon: 'icon.png',
     author: 'Netsky',
@@ -593,6 +593,8 @@ exports.parseChapters = ($, mangaId) => {
 exports.parseChapterDetails = ($, mangaId, chapterId) => {
     const pages = [];
     const rawPages = $('div#viewer').children('img').toArray();
+    if (!$('div#viewer').length)
+        pages.push("https://i.imgur.com/8WoVeWv.png"); //Fallback in case the manga is licensed
     for (let page of rawPages) {
         let url = page.attribs['data-original'];
         if (url.startsWith("//")) {
