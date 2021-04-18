@@ -341,7 +341,7 @@ const MangaJarParser_1 = require("./MangaJarParser");
 const MJ_DOMAIN = 'https://mangajar.com';
 const method = 'GET';
 exports.MangaJarInfo = {
-    version: '1.0.3',
+    version: '1.0.4',
     name: 'MangaJar',
     icon: 'icon.png',
     author: 'Netsky',
@@ -828,8 +828,7 @@ const parseDate = (date) => {
         time = new Date(Date.now() - (number * 1000));
     }
     else {
-        let split = date.split("-");
-        time = new Date(Number(split[2]), Number(split[0]) - 1, Number(split[1]));
+        time = new Date(date);
     }
     return time;
 };
