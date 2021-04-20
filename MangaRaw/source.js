@@ -341,7 +341,7 @@ const MangaRawParser_1 = require("./MangaRawParser");
 const MR_DOMAIN = 'https://www.manga-raw.club';
 const method = 'GET';
 exports.MangaRawInfo = {
-    version: '1.0.2',
+    version: '1.0.3',
     name: 'MangaRaw',
     icon: 'icon.png',
     author: 'Netsky',
@@ -404,7 +404,7 @@ class MangaRaw extends paperback_extensions_common_1.Source {
             };
             while (updatedManga.loadMore) {
                 const request = createRequestObject({
-                    url: `${MR_DOMAIN}/browse/?results=${page}&filter=Updated`,
+                    url: `${MR_DOMAIN}/browse/?results=${page++}&filter=Updated`,
                     method,
                 });
                 const response = yield this.requestManager.schedule(request, 1);
@@ -596,9 +596,9 @@ exports.parseUpdatedManga = ($, time, ids) => {
             if (ids.includes(id)) {
                 updatedManga.push(id);
             }
-            else {
-                loadMore = false;
-            }
+        }
+        else {
+            loadMore = false;
         }
     }
     return {

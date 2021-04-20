@@ -341,7 +341,7 @@ const MangaJarParser_1 = require("./MangaJarParser");
 const MJ_DOMAIN = 'https://mangajar.com';
 const method = 'GET';
 exports.MangaJarInfo = {
-    version: '1.0.4',
+    version: '1.0.5',
     name: 'MangaJar',
     icon: 'icon.png',
     author: 'Netsky',
@@ -412,7 +412,7 @@ class MangaJar extends paperback_extensions_common_1.Source {
             };
             while (updatedManga.loadMore) {
                 const request = createRequestObject({
-                    url: `${MJ_DOMAIN}/manga?sortBy=-last_chapter_at&page=${page}`,
+                    url: `${MJ_DOMAIN}/manga?sortBy=-last_chapter_at&page=${page++}`,
                     method,
                     cookies: this.cookies,
                 });
@@ -564,7 +564,7 @@ exports.parseMangaDetails = ($, mangaId) => {
         image,
         rating: Number(rating),
         status: status,
-        author: "",
+        author: "Unknown",
         tags: tagSections,
         desc: description,
         //hentai: hentai
@@ -619,14 +619,14 @@ exports.parseUpdatedManga = ($, time, ids) => {
             if (ids.includes(id)) {
                 updatedManga.push(id);
             }
-            else {
-                loadMore = false;
-            }
+        }
+        else {
+            loadMore = false;
         }
     }
     return {
         ids: updatedManga,
-        loadMore,
+        loadMore
     };
 };
 exports.parseHomeSections = ($, sections, sectionCallback) => {

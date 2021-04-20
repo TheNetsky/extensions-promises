@@ -341,7 +341,7 @@ const MangaGenkiParser_1 = require("./MangaGenkiParser");
 const MG_DOMAIN = 'https://mangagenki.com';
 const method = 'GET';
 exports.MangaGenkiInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'MangaGenki',
     icon: 'icon.png',
     author: 'Netsky',
@@ -408,7 +408,7 @@ class MangaGenki extends paperback_extensions_common_1.Source {
             };
             while (updatedManga.loadMore) {
                 const request = createRequestObject({
-                    url: `${MG_DOMAIN}/page/${page}/`,
+                    url: `${MG_DOMAIN}/page/${page++}/`,
                     method,
                 });
                 const response = yield this.requestManager.schedule(request, 1);
@@ -614,9 +614,9 @@ exports.parseUpdatedManga = ($, time, ids) => {
             if (ids.includes(id)) {
                 updatedManga.push(id);
             }
-            else {
-                loadMore = false;
-            }
+        }
+        else {
+            loadMore = false;
         }
     }
     return {
