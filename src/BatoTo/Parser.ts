@@ -116,7 +116,7 @@ export class Parser {
             let chapName = $('span', $(chapterTile)).first().text().replace(':', '').trim()
             if (chapName == chapGroup) chapName = ''
             let chapter = $('b', chapterTile).text().toLowerCase()
-            let chapNum = Number(chapter.match(/(\d+)/)![0] ?? 0)
+            let chapNum = Number((/(\d+)/).test(chapter) ? chapter.match(/(\d+)/)![0] : 0)
             let volume = Number(chapter?.split('chapter')[0]?.replace('volume', '').trim())
             
             let language = $('.emoji').attr('data-lang') ?? 'gb'
