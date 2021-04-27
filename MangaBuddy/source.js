@@ -341,7 +341,7 @@ const MangaBuddyParser_1 = require("./MangaBuddyParser");
 const MB_DOMAIN = 'https://mangabuddy.com';
 const method = 'GET';
 exports.MangaBuddyInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'MangaBuddy',
     icon: 'icon.png',
     author: 'Netsky',
@@ -510,7 +510,7 @@ exports.parseMangaDetails = ($, mangaId) => {
         titles.push(decodeHTMLEntity(title.trim()));
     }
     const image = (_a = "https:" + $("img", "figure.cover").attr('data-src')) !== null && _a !== void 0 ? _a : "";
-    const description = decodeHTMLEntity($("div.content").text().trim());
+    const description = decodeHTMLEntity($("div.content", "div.summary").text().trim());
     const author = decodeHTMLEntity($("span:contains(Authors:)").nextAll().text().trim().replace(/\n/, ",").replace(/\s+/g, " "));
     let hentai = false;
     const arrayTags = [];
