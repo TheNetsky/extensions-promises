@@ -341,7 +341,7 @@ const FunmangaParser_1 = require("./FunmangaParser");
 const FM_DOMAIN = 'https://www.funmanga.com';
 const method = 'GET';
 exports.FunmangaInfo = {
-    version: '1.0.3',
+    version: '1.0.4',
     name: 'Funmanga',
     icon: 'icon.png',
     author: 'Netsky',
@@ -357,7 +357,7 @@ exports.FunmangaInfo = {
     ]
 };
 class Funmanga extends paperback_extensions_common_1.Source {
-    getMangaShareUrl(mangaId) { return `${FM_DOMAIN}/manga/${mangaId}`; }
+    getMangaShareUrl(mangaId) { return `${FM_DOMAIN}/${mangaId}`; }
     ;
     getMangaDetails(mangaId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -388,6 +388,7 @@ class Funmanga extends paperback_extensions_common_1.Source {
             const request = createRequestObject({
                 url: `${FM_DOMAIN}/${mangaId}/${chapterId}`,
                 method: method,
+                param: "/all-pages"
             });
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data, { xmlMode: false });
@@ -431,7 +432,7 @@ class Funmanga extends paperback_extensions_common_1.Source {
     getHomePageSections(sectionCallback) {
         return __awaiter(this, void 0, void 0, function* () {
             const section1 = createHomeSection({ id: 'latest_updates', title: 'Latest Updates', view_more: true });
-            const section2 = createHomeSection({ id: 'hot_update', title: 'Hot Updates' }); //Popular Manga Broken on site
+            const section2 = createHomeSection({ id: 'hot_update', title: 'Hot Updates' });
             const sections = [section1, section2];
             const request = createRequestObject({
                 url: FM_DOMAIN,
@@ -560,19 +561,20 @@ exports.parseMangaDetails = ($, mangaId) => {
     });
 };
 exports.parseChapters = ($, mangaId) => {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e;
     const chapters = [];
     for (const elem of $("li", "ul.chapter-list").toArray()) {
         const title = (_b = "Chapter " + ((_a = $('a', elem).attr('href')) === null || _a === void 0 ? void 0 : _a.split('/').pop())) !== null && _b !== void 0 ? _b : '';
         const date = parseDate($("span.date", elem).text().trim());
         const chapterId = (_d = (_c = $('a', elem).attr('href')) === null || _c === void 0 ? void 0 : _c.split('/').pop()) !== null && _d !== void 0 ? _d : '';
-        const chapterNumber = (_f = (_e = $('a', elem).attr('href')) === null || _e === void 0 ? void 0 : _e.split('/').pop()) !== null && _f !== void 0 ? _f : 0;
+        let chapterNumber = (_e = $('a', elem).attr('href')) === null || _e === void 0 ? void 0 : _e.split('/').pop();
+        chapterNumber = Number((chapterNumber === null || chapterNumber === void 0 ? void 0 : chapterNumber.includes("-")) ? chapterNumber.split("-")[0] : chapterNumber);
         chapters.push(createChapter({
             id: chapterId,
             mangaId,
             name: title,
             langCode: paperback_extensions_common_1.LanguageCode.ENGLISH,
-            chapNum: Number(chapterNumber),
+            chapNum: isNaN(chapterNumber) ? 0 : chapterNumber,
             time: date,
         }));
     }
