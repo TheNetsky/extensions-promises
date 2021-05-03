@@ -341,7 +341,7 @@ const MangaRawParser_1 = require("./MangaRawParser");
 const MR_DOMAIN = 'https://www.manga-raw.club';
 const method = 'GET';
 exports.MangaRawInfo = {
-    version: '1.0.3',
+    version: '1.0.4',
     name: 'MangaRaw',
     icon: 'icon.png',
     author: 'Netsky',
@@ -384,11 +384,9 @@ class MangaRaw extends paperback_extensions_common_1.Source {
     }
     getChapterDetails(mangaId, chapterId) {
         return __awaiter(this, void 0, void 0, function* () {
-            let metadata = { 'mangaId': mangaId, 'chapterId': chapterId, 'nextPage': false, 'page': 1 };
             const request = createRequestObject({
                 url: `${MR_DOMAIN}/reader/en/${chapterId}`,
                 method: method,
-                metadata: metadata,
             });
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
@@ -420,12 +418,14 @@ class MangaRaw extends paperback_extensions_common_1.Source {
     }
     getHomePageSections(sectionCallback) {
         return __awaiter(this, void 0, void 0, function* () {
-            const section1 = createHomeSection({ id: 'new_manga', title: 'New Manga', view_more: true });
-            const section2 = createHomeSection({ id: 'top_manga', title: 'Top Manga', view_more: true });
-            const sections = [section1, section2];
+            const section1 = createHomeSection({ id: 'trending_manga', title: 'Trending Manga', view_more: false });
+            const section2 = createHomeSection({ id: 'most_viewed', title: 'Most Viewed Today', view_more: false });
+            const section3 = createHomeSection({ id: 'new_manga', title: 'New Manga', view_more: true });
+            const sections = [section1, section2, section3];
             const request = createRequestObject({
                 url: MR_DOMAIN,
                 method,
+                param: "/listy/manga/"
             });
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
@@ -469,7 +469,7 @@ class MangaRaw extends paperback_extensions_common_1.Source {
             const request = createRequestObject({
                 url: `${MR_DOMAIN}/search/?search=`,
                 method,
-                param: `${search}`
+                param: search
             });
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
@@ -499,6 +499,7 @@ exports.MangaRaw = MangaRaw;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isLastPage = exports.parseTags = exports.parseViewMore = exports.parseSearch = exports.generateSearch = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
+const url = "https://www.manga-raw.club";
 exports.parseMangaDetails = ($, mangaId) => {
     var _a, _b, _c;
     const titles = [];
@@ -508,7 +509,7 @@ exports.parseMangaDetails = ($, mangaId) => {
         titles.push(decodeHTMLEntity(title));
     }
     const author = $("span", "div.author").next().text().trim();
-    const image = "https://www.manga-raw.club" + $("img", "div.fixed-img").attr('data-src');
+    const image = url + $("img", "div.fixed-img").attr('data-src');
     const description = decodeHTMLEntity($("div.content", "div.summary").text().trim());
     let hentai = false;
     const arrayTags = [];
@@ -607,15 +608,45 @@ exports.parseUpdatedManga = ($, time, ids) => {
     };
 };
 exports.parseHomeSections = ($, sections, sectionCallback) => {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     for (const section of sections)
         sectionCallback(section);
-    //New Manga
-    const newManga = [];
-    for (const manga of $("li.novel-item", "ul.novel-list.grid").toArray()) {
+    //Trending Manga
+    const trendingManga = [];
+    for (const manga of $("li.novel-item", "div#popular-novel-section").toArray()) {
         const id = (_b = (_a = $("a", manga).attr('href')) === null || _a === void 0 ? void 0 : _a.split("manga/")[1].replace("/", "")) !== null && _b !== void 0 ? _b : "";
+        const title = (_c = $("img", manga).attr('alt')) !== null && _c !== void 0 ? _c : "";
+        const image = (_d = $("img", manga).attr('src')) !== null && _d !== void 0 ? _d : "";
+        if (!id || !title)
+            continue;
+        trendingManga.push(createMangaTile({
+            id: id,
+            image: image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+    }
+    sections[0].items = trendingManga;
+    sectionCallback(sections[0]);
+    const viewedManga = [];
+    for (const manga of $("li.swiper-slide.novel-item", "div#recommend-novel-slider").toArray()) {
+        const id = (_f = (_e = $("a", manga).attr('href')) === null || _e === void 0 ? void 0 : _e.split("manga/")[1].replace("/", "")) !== null && _f !== void 0 ? _f : "";
+        const title = (_g = $("img", manga).attr('alt')) !== null && _g !== void 0 ? _g : "";
+        const image = (_h = $("img", manga).attr('src')) !== null && _h !== void 0 ? _h : "";
+        if (!id || !title)
+            continue;
+        viewedManga.push(createMangaTile({
+            id: id,
+            image: image,
+            title: createIconText({ text: decodeHTMLEntity(title) }),
+        }));
+    }
+    sections[1].items = viewedManga;
+    sectionCallback(sections[1]);
+    const newManga = [];
+    for (const manga of $("li.novel-item", "div#updated-novel-slider").toArray()) {
+        const id = (_k = (_j = $("a", manga).attr('href')) === null || _j === void 0 ? void 0 : _j.split("manga/")[1].replace("/", "")) !== null && _k !== void 0 ? _k : "";
         const title = $("a", manga).attr('title');
-        const image = "https://www.manga-raw.club" + $("img", manga).attr('data-src');
+        const image = (_l = $("img", manga).attr('data-src')) !== null && _l !== void 0 ? _l : "";
         if (!id || !title)
             continue;
         newManga.push(createMangaTile({
@@ -624,24 +655,8 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
             title: createIconText({ text: decodeHTMLEntity(title) }),
         }));
     }
-    sections[0].items = newManga;
-    sectionCallback(sections[0]);
-    //Top Manga
-    const topManga = [];
-    for (const manga of $("li.swiper-slide.novel-item", "ul.swiper-wrapper").toArray()) {
-        const id = (_d = (_c = $("a", manga).attr('href')) === null || _c === void 0 ? void 0 : _c.split("manga/")[1].replace("/", "")) !== null && _d !== void 0 ? _d : "";
-        const title = $("a", manga).attr('title');
-        const image = "https://www.manga-raw.club" + $("img", manga).attr('data-src');
-        if (!id || !title)
-            continue;
-        topManga.push(createMangaTile({
-            id: id,
-            image: image,
-            title: createIconText({ text: decodeHTMLEntity(title) }),
-        }));
-    }
-    sections[1].items = topManga;
-    sectionCallback(sections[1]);
+    sections[2].items = newManga;
+    sectionCallback(sections[2]);
     for (const section of sections)
         sectionCallback(section);
 };
@@ -657,7 +672,7 @@ exports.parseSearch = ($) => {
     for (const obj of $("li.novel-item", "ul.novel-list.grid").toArray()) {
         const id = (_b = (_a = $("a", obj).attr('href')) === null || _a === void 0 ? void 0 : _a.split("manga/")[1].replace("/", "")) !== null && _b !== void 0 ? _b : "";
         const title = $("a", obj).attr('title');
-        const image = "https://www.manga-raw.club" + $("img", obj).attr('data-src');
+        const image = url + $("img", obj).attr('data-src');
         const subtitle = (_c = "Chapter " + $("strong", $("div.novel-stats", obj)).text().trim().replace(/[^0-9]/g, "")) !== null && _c !== void 0 ? _c : 0;
         if (!collectedIds.includes(id) && id && title) {
             mangas.push(createMangaTile({
@@ -672,14 +687,14 @@ exports.parseSearch = ($) => {
     return mangas;
 };
 exports.parseViewMore = ($, homepageSectionId) => {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     const manga = [];
     const collectedIds = [];
     for (const obj of $("li.novel-item", "ul.novel-list.grid").toArray()) {
         const id = (_b = (_a = $("a", obj).attr('href')) === null || _a === void 0 ? void 0 : _a.split("manga/")[1].replace("/", "")) !== null && _b !== void 0 ? _b : "";
         const title = $("a", obj).attr('title');
-        const image = "https://www.manga-raw.club" + $("img", obj).attr('data-src');
-        const subtitle = (_c = "Chapter " + $("strong", $("div.novel-stats", obj)).text().trim().replace(/[^0-9]/g, "")) !== null && _c !== void 0 ? _c : 0;
+        const image = (_c = $("img", obj).attr('data-src')) !== null && _c !== void 0 ? _c : "";
+        const subtitle = (_d = "Chapter " + $("strong", $("div.novel-stats", obj)).text().trim().replace(/[^0-9]/g, "")) !== null && _d !== void 0 ? _d : 0;
         if (!collectedIds.includes(id) && id && title) {
             manga.push(createMangaTile({
                 id,
