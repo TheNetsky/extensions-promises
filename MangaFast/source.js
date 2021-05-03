@@ -341,7 +341,7 @@ const MangaFastParser_1 = require("./MangaFastParser");
 const MF_DOMAIN = 'https://mangafast.net';
 const method = 'GET';
 exports.MangaFastInfo = {
-    version: '1.0.2',
+    version: '1.0.3',
     name: 'MangaFast',
     icon: 'icon.png',
     author: 'Netsky',
@@ -349,10 +349,16 @@ exports.MangaFastInfo = {
     description: 'Extension that pulls manga from MangaFast.',
     hentaiSource: false,
     websiteBaseURL: MF_DOMAIN,
-    sourceTags: []
+    sourceTags: [
+        {
+            text: "Notifications",
+            type: paperback_extensions_common_1.TagType.GREEN
+        }
+    ]
 };
 class MangaFast extends paperback_extensions_common_1.Source {
-    getMangaShareUrl(mangaId) { return `${MF_DOMAIN}/manga/${mangaId}`; }
+    getMangaShareUrl(mangaId) { return `${MF_DOMAIN}/read/${mangaId}`; }
+    ;
     getMangaDetails(mangaId) {
         return __awaiter(this, void 0, void 0, function* () {
             const request = createRequestObject({
@@ -390,74 +396,111 @@ class MangaFast extends paperback_extensions_common_1.Source {
             return MangaFastParser_1.parseChapterDetails($, mangaId, chapterId);
         });
     }
-    /* No real place to the updates besides the 12 tiles on the homescreen.
-      async filterUpdatedManga(mangaUpdatesFoundCallback: (updates: MangaUpdates) => void, time: Date, ids: string[]): Promise<void> {
-        let page = 1;
-        let updatedManga: UpdatedManga = {
-          ids: [],
-          loadMore: true
-        };
-    
-        while (updatedManga.loadMore) {
-          const request = createRequestObject({
-            url: `${MF_DOMAIN}/manga?sortBy=-last_chapter_at&page=${page}`,
-            method,
-          })
-    
-          const response = await this.requestManager.schedule(request, 1)
-          const $ = this.cheerio.load(response.data)
-    
-          updatedManga = parseUpdatedManga($, time, ids)
-          if (updatedManga.ids.length > 0) {
-            mangaUpdatesFoundCallback(createMangaUpdates({
-              ids: updatedManga.ids
-            }));
-          }
-        }
-    
-      }*/
-    getHomePageSections(sectionCallback) {
+    filterUpdatedManga(mangaUpdatesFoundCallback, time, ids) {
         return __awaiter(this, void 0, void 0, function* () {
-            const section1 = createHomeSection({ id: 'new_manga', title: 'New Manga' });
-            const section2 = createHomeSection({ id: 'top_manga', title: 'Top Manga' });
-            const section3 = createHomeSection({ id: 'latest_manga_update', title: 'Latest Manga Update' });
-            const section4 = createHomeSection({ id: 'top_weekly', title: 'Top Weekly Comic' });
-            const section5 = createHomeSection({ id: 'latest_manhua_update', title: 'Latest Manhua Update' });
-            const section6 = createHomeSection({ id: 'popular_manga', title: 'Popular Manga' });
-            const sections = [section1, section2, section3, section4, section5, section6];
-            for (const section of sections) {
-                sectionCallback(section);
-            }
-            ;
-            for (let section of sections) {
-                let sectionID = "";
-                switch (section.id) {
-                    case "latest_manga_update":
-                        sectionID = "/?section=latest-update";
-                        break;
-                    case "new_manga":
-                        sectionID = "/?section=new-manga";
-                        break;
-                    case "latest_manhua_update":
-                        sectionID = "/?section=latest-manhua";
-                        break;
-                    case "popular_manga":
-                        sectionID = "/?section=popular-type";
-                        break;
-                    default:
-                        break;
-                }
+            let updatedManga = {
+                ids: [],
+            };
+            const params = [
+                "?section=latest-update",
+                "?section=latest-manhua"
+            ];
+            for (const param of params) {
                 const request = createRequestObject({
-                    url: MF_DOMAIN,
+                    url: `${MF_DOMAIN}/`,
                     method,
-                    param: sectionID
+                    param: param
                 });
                 const response = yield this.requestManager.schedule(request, 1);
-                let $ = this.cheerio.load(response.data);
-                section.items = MangaFastParser_1.parseHomeSections($, section);
-                sectionCallback(section);
+                const $ = this.cheerio.load(response.data);
+                updatedManga = MangaFastParser_1.parseUpdatedManga($, time, ids);
+                if (updatedManga.ids.length > 0) {
+                    mangaUpdatesFoundCallback(createMangaUpdates({
+                        ids: updatedManga.ids
+                    }));
+                }
             }
-            ;
+        });
+    }
+    getHomePageSections(sectionCallback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const sections = [
+                //New Manga
+                {
+                    request: createRequestObject({
+                        url: MF_DOMAIN,
+                        method,
+                        param: "/?section=new-manga"
+                    }),
+                    section: createHomeSection({
+                        id: "new_manga",
+                        title: "New Manga",
+                        view_more: false,
+                    }),
+                },
+                //Top Manga
+                {
+                    request: createRequestObject({
+                        url: MF_DOMAIN,
+                        method,
+                    }),
+                    section: createHomeSection({
+                        id: "top_manga",
+                        title: "Top Manga",
+                        view_more: false,
+                    }),
+                },
+                //Popular Manga
+                {
+                    request: createRequestObject({
+                        url: MF_DOMAIN,
+                        method,
+                        param: "/?section=popular-type"
+                    }),
+                    section: createHomeSection({
+                        id: "popular_manga",
+                        title: "Popular Manga",
+                        view_more: false,
+                    }),
+                },
+                //Latest Manga Update 
+                {
+                    request: createRequestObject({
+                        url: MF_DOMAIN,
+                        method,
+                        param: "/?section=latest-update"
+                    }),
+                    section: createHomeSection({
+                        id: "latest_manga_update",
+                        title: "Latest Manga Update",
+                        view_more: false,
+                    }),
+                },
+                //Latest Manhua Update 
+                {
+                    request: createRequestObject({
+                        url: MF_DOMAIN,
+                        method,
+                        param: "/?section=latest-manhua"
+                    }),
+                    section: createHomeSection({
+                        id: "latest_manhua_update",
+                        title: "Latest Manhua Update",
+                        view_more: false,
+                    }),
+                },
+            ];
+            const promises = [];
+            for (const section of sections) {
+                sectionCallback(section.section);
+                promises.push(this.requestManager.schedule(section.request, 1).then(response => {
+                    const $ = this.cheerio.load(response.data);
+                    const tiles = MangaFastParser_1.parseHomeSections($, section.section);
+                    section.section.items = tiles;
+                    sectionCallback(section.section);
+                }));
+            }
+            yield Promise.all(promises);
         });
     }
     searchRequest(query, metadata) {
@@ -468,7 +511,7 @@ class MangaFast extends paperback_extensions_common_1.Source {
             const request = createRequestObject({
                 url: `${MF_DOMAIN}/page/${page}/?s=`,
                 method,
-                param: `${search}`
+                param: search
             });
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
@@ -497,7 +540,7 @@ exports.MangaFast = MangaFast;
 },{"./MangaFastParser":27,"paperback-extensions-common":4}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLastPage = exports.parseTags = exports.parseSearch = exports.generateSearch = exports.parseHomeSections = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
+exports.isLastPage = exports.parseTags = exports.parseSearch = exports.generateSearch = exports.parseHomeSections = exports.parseUpdatedManga = exports.parseChapterDetails = exports.parseChapters = exports.parseMangaDetails = void 0;
 const paperback_extensions_common_1 = require("paperback-extensions-common");
 exports.parseMangaDetails = ($, mangaId) => {
     var _a, _b, _c, _d;
@@ -582,32 +625,26 @@ exports.parseChapterDetails = ($, mangaId, chapterId) => {
     });
     return chapterDetails;
 };
-/* No real place to the updates besides the 12 tiles on the homescreen.
-export const parseUpdatedManga = ($: CheerioStatic, time: Date, ids: string[]): UpdatedManga => {
-  const updatedManga: string[] = [];
-  let loadMore = true;
-
-  for (let obj of $("article[class*=flex-item]", $("div.flex-container.row")).toArray()) {
-    const id = $("a", obj).attr('href')?.split("manga/")[1] ?? "";
-    const dateContext = $('.list-group-item ', $(obj));
-    const date = $('span', dateContext).text();
-    const mangaDate = new Date;
-    if (mangaDate > time) {
-      if (ids.includes(id)) {
-        updatedManga.push(id);
-      } else {
-        loadMore = false;
-      }
+//No real place to the updates besides the 12 tiles on the homescreen.
+exports.parseUpdatedManga = ($, time, ids) => {
+    var _a, _b;
+    const updatedManga = [];
+    for (const manga of $("div.ls4,last-updates-content", "div.ls4w").toArray()) {
+        const id = (_b = (_a = $("a", manga).attr('href')) === null || _a === void 0 ? void 0 : _a.split("read/")[1].replace("/", "")) !== null && _b !== void 0 ? _b : "";
+        const date = $("span.ls4s", manga).text().trim().split("  ")[1];
+        const mangaDate = parseDate(date);
+        if (mangaDate > time) {
+            if (ids.includes(id)) {
+                updatedManga.push(id);
+            }
+        }
     }
-  }
-  return {
-    ids: updatedManga,
-    loadMore,
-  }
-}
-*/
+    return {
+        ids: updatedManga
+    };
+};
 exports.parseHomeSections = ($, section) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
     const mangaTiles = [];
     switch (section.id) {
         //Top Manga 
@@ -705,25 +742,6 @@ exports.parseHomeSections = ($, section) => {
                 }));
             }
             break;
-        //Top Weekly
-        case "top_weekly":
-            for (const manga of $("div.ls8", "div.ls8w").toArray()) {
-                const id = (_r = $("a", manga).attr('href')) === null || _r === void 0 ? void 0 : _r.split("read/")[1].replace("/", "");
-                const title = $("a", manga).attr('title');
-                const image = (_t = (_s = $("img", manga).attr('src')) === null || _s === void 0 ? void 0 : _s.split("?")[0]) !== null && _t !== void 0 ? _t : "";
-                const lastChapter = $("div.ls84", manga).text().trim();
-                const updateTime = $("span", manga).text().trim();
-                if (!id || !title)
-                    continue;
-                mangaTiles.push(createMangaTile({
-                    id: id,
-                    image: image,
-                    title: createIconText({ text: title }),
-                    subtitleText: createIconText({ text: lastChapter }),
-                    secondaryText: createIconText({ text: updateTime }),
-                }));
-            }
-            break;
         default:
             break;
     }
@@ -771,6 +789,43 @@ exports.isLastPage = ($) => {
     if ($("a:contains(Next »)", "div.p-3.btn-w").length)
         isLast = true;
     return isLast;
+};
+const parseDate = (date) => {
+    var _a;
+    date = date.toUpperCase();
+    let time;
+    let number = Number(((_a = /\d*/.exec(date)) !== null && _a !== void 0 ? _a : [])[0]);
+    if (date.includes("LESS THAN AN HOUR") || date.includes("JUST NOW")) {
+        time = new Date(Date.now());
+    }
+    else if (date.includes("YEAR") || date.includes("YEARS")) {
+        time = new Date(Date.now() - (number * 31556952000));
+    }
+    else if (date.includes("MONTH") || date.includes("MONTHS")) {
+        time = new Date(Date.now() - (number * 2592000000));
+    }
+    else if (date.includes("WEEK") || date.includes("WEEKS")) {
+        time = new Date(Date.now() - (number * 604800000));
+    }
+    else if (date.includes("YESTERDAY")) {
+        time = new Date(Date.now() - 86400000);
+    }
+    else if (date.includes("DAY") || date.includes("DAYS")) {
+        time = new Date(Date.now() - (number * 86400000));
+    }
+    else if (date.includes("HOUR") || date.includes("HOURS")) {
+        time = new Date(Date.now() - (number * 3600000));
+    }
+    else if (date.includes("MINUTE") || date.includes("MINUTES")) {
+        time = new Date(Date.now() - (number * 60000));
+    }
+    else if (date.includes("SECOND") || date.includes("SECONDS")) {
+        time = new Date(Date.now() - (number * 1000));
+    }
+    else {
+        time = new Date(date);
+    }
+    return time;
 };
 
 },{"paperback-extensions-common":4}]},{},[26])(26)
