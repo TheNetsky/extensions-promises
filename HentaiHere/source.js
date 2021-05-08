@@ -341,7 +341,7 @@ const HentaiHereParser_1 = require("./HentaiHereParser");
 const HH_DOMAIN = 'https://hentaihere.com';
 const method = 'GET';
 exports.HentaiHereInfo = {
-    version: '1.0.0',
+    version: '1.0.1',
     name: 'HentaiHere',
     icon: 'icon.png',
     author: 'Netsky',
@@ -533,11 +533,11 @@ exports.parseMangaDetails = ($, mangaId) => {
     });
 };
 exports.parseChapters = ($, mangaId) => {
-    var _a, _b;
+    var _a, _b, _c;
     const chapters = [];
     for (const c of $("li.sub-chp", "ul.arf-list").toArray()) {
-        const title = decodeHTMLEntity($("span.pull-left", c).text().trim().replace($("span.pull-left i.text-muted", c).text().trim(), ""));
-        const id = (_b = (_a = $("a", c).attr('href')) === null || _a === void 0 ? void 0 : _a.replace(`${HH_DOMAIN}/m/`, "").trim()) !== null && _b !== void 0 ? _b : "";
+        const title = decodeHTMLEntity($("span.pull-left", c).text().replace($("span.pull-left i.text-muted", c).text(), "").trim());
+        const id = String((_c = (_b = (_a = $("a", c).attr('href')) === null || _a === void 0 ? void 0 : _a.split(`/m/${mangaId}/`)[1]) === null || _b === void 0 ? void 0 : _b.split("/")[1]) !== null && _c !== void 0 ? _c : "");
         const date = new Date;
         const chapterNumber = Number(id.replace(/\//g, ""));
         chapters.push(createChapter({
@@ -556,7 +556,7 @@ exports.parseChapterDetails = (data, mangaId, chapterId) => {
     const pages = [];
     const obj = JSON.parse((_b = (_a = /var rff_imageList = (.*);/.exec(data)) === null || _a === void 0 ? void 0 : _a[1]) !== null && _b !== void 0 ? _b : "");
     for (const i of obj) {
-        const page = "https://hentaicdn.com/hentai/" + i;
+        const page = "https://hentaicdn.com/hentai" + i;
         pages.push(page);
     }
     const chapterDetails = createChapterDetails({
