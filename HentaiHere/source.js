@@ -341,7 +341,7 @@ const HentaiHereParser_1 = require("./HentaiHereParser");
 const HH_DOMAIN = 'https://hentaihere.com';
 const method = 'GET';
 exports.HentaiHereInfo = {
-    version: '1.0.1',
+    version: '1.0.2',
     name: 'HentaiHere',
     icon: 'icon.png',
     author: 'Netsky',
@@ -538,7 +538,7 @@ exports.parseChapters = ($, mangaId) => {
     for (const c of $("li.sub-chp", "ul.arf-list").toArray()) {
         const title = decodeHTMLEntity($("span.pull-left", c).text().replace($("span.pull-left i.text-muted", c).text(), "").trim());
         const id = String((_c = (_b = (_a = $("a", c).attr('href')) === null || _a === void 0 ? void 0 : _a.split(`/m/${mangaId}/`)[1]) === null || _b === void 0 ? void 0 : _b.split("/")[1]) !== null && _c !== void 0 ? _c : "");
-        const date = new Date;
+        const date = new Date(Date.now() - 2208986640000); // *Lennyface*
         const chapterNumber = Number(id.replace(/\//g, ""));
         chapters.push(createChapter({
             id: id,
@@ -568,7 +568,7 @@ exports.parseChapterDetails = (data, mangaId, chapterId) => {
     return chapterDetails;
 };
 exports.parseHomeSections = ($, sections, sectionCallback) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     for (const section of sections)
         sectionCallback(section);
     //Staff Pick
@@ -576,7 +576,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
     for (const manga of $("div.item", "div#staffpick").toArray()) {
         const id = (_a = $("a", manga).attr('href')) === null || _a === void 0 ? void 0 : _a.replace(`${HH_DOMAIN}/m/`, "").trim();
         const image = (_b = $("img", manga).attr('src')) !== null && _b !== void 0 ? _b : "";
-        const title = decodeHTMLEntity(String((_c = $("img", manga).attr('alt')) === null || _c === void 0 ? void 0 : _c.trim()));
+        const title = decodeHTMLEntity((_d = String((_c = $("img", manga).attr('alt')) === null || _c === void 0 ? void 0 : _c.trim())) !== null && _d !== void 0 ? _d : "");
         const subtitle = $("b.text-danger", manga).text();
         if (!id || !title)
             continue;
@@ -592,9 +592,9 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
     //Recently Added
     const recentlyAdded = [];
     for (const manga of $($("div.row.row-sm")[1]).children("div").toArray()) {
-        const id = (_d = $("a", manga).attr('href')) === null || _d === void 0 ? void 0 : _d.replace(`${HH_DOMAIN}/m/`, "").trim();
-        const image = (_e = $("img", manga).attr('src')) !== null && _e !== void 0 ? _e : "";
-        const title = decodeHTMLEntity(String((_f = $("img", manga).attr('alt')) === null || _f === void 0 ? void 0 : _f.trim()));
+        const id = (_e = $("a", manga).attr('href')) === null || _e === void 0 ? void 0 : _e.replace(`${HH_DOMAIN}/m/`, "").trim();
+        const image = (_f = $("img", manga).attr('src')) !== null && _f !== void 0 ? _f : "";
+        const title = decodeHTMLEntity(String((_h = (_g = $("img", manga).attr('alt')) === null || _g === void 0 ? void 0 : _g.trim()) !== null && _h !== void 0 ? _h : ""));
         if (!id || !title)
             continue;
         recentlyAdded.push(createMangaTile({
@@ -604,13 +604,14 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
         }));
     }
     sections[1].items = recentlyAdded;
+    console.log(recentlyAdded);
     sectionCallback(sections[1]);
     //Trending
     const Trending = [];
     for (const manga of $("li.list-group-item", "ul.list-group").toArray()) {
-        const id = (_g = $("a", manga).attr('href')) === null || _g === void 0 ? void 0 : _g.split(`/m/`)[1]; //Method required since authors pages are included in the list, but don't use /m/
-        const image = (_h = $("img", manga).attr('src')) !== null && _h !== void 0 ? _h : "";
-        const title = decodeHTMLEntity(String((_j = $("img", manga).attr('alt')) === null || _j === void 0 ? void 0 : _j.trim()));
+        const id = (_j = $("a", manga).attr('href')) === null || _j === void 0 ? void 0 : _j.split(`/m/`)[1]; //Method required since authors pages are included in the list, but don't use /m/
+        const image = (_k = $("img", manga).attr('src')) !== null && _k !== void 0 ? _k : "";
+        const title = decodeHTMLEntity((_m = String((_l = $("img", manga).attr('alt')) === null || _l === void 0 ? void 0 : _l.trim())) !== null && _m !== void 0 ? _m : "");
         if (!id || !title)
             continue;
         Trending.push(createMangaTile({
