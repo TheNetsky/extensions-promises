@@ -55,17 +55,6 @@ describe('Readm Tests', function () {
         expect(data.mangaId, "Missing MangaID").to.be.not.empty;
         expect(data.pages, "No pages present").to.be.not.empty;
     });
-    it("Testing home page results for hot update titles", async () => {
-        let results = await wrapper.getViewMoreItems(source, "hot_update", {}, 1)
-
-        expect(results, "No results whatsoever for this section").to.exist
-        expect(results, "No results whatsoever for this section").to.exist
-
-        let data = results![0]
-        expect(data.id, "No ID present").to.exist
-        expect(data.image, "No image present").to.exist
-        expect(data.title.text, "No title present").to.exist
-    });
     it("Testing home page results for hot titles", async () => {
         let results = await wrapper.getViewMoreItems(source, "hot_manga", {}, 1)
 
@@ -88,16 +77,6 @@ describe('Readm Tests', function () {
         expect(data.image, "No image present").to.exist
         expect(data.title.text, "No title present").to.exist
     });
-    it("Testing home page results for new titles", async () => {
-        let results = await wrapper.getViewMoreItems(source, "new_manga", {}, 1)
-
-        expect(results, "No results whatsoever for this section").to.exist
-        expect(results, "No results whatsoever for this section").to.exist
-
-        let data = results![0]
-        expect(data.id, "No ID present").to.exist
-        expect(data.image, "No image present").to.exist
-    })
     it("Testing search", async () => {
         let testSearch = createSearchRequest({
             title: 'to love'
@@ -115,9 +94,10 @@ describe('Readm Tests', function () {
     it("Testing Home-Page aquisition", async () => {
         let homePages = await wrapper.getHomePageSections(source)
         expect(homePages, "No response from server").to.exist
-        expect(homePages[0], "No top weekly section available").to.exist
-        expect(homePages[1], "No latest updates section available").to.exist
-        expect(homePages[2], "No new manga section available").to.exist
+        expect(homePages[0], "No hot update section available").to.exist
+        expect(homePages[1], "No popular section available").to.exist
+        expect(homePages[2], "No latest updates section available").to.exist
+        expect(homePages[3], "No new manga section available").to.exist
     });
     it("Testing Notifications", async () => {
         let updates = await wrapper.filterUpdatedManga(source, new Date("2021-4-29"), [mangaId, "16067", "19226"])
