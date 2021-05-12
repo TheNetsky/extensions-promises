@@ -18,7 +18,7 @@ const RM_DOMAIN = 'https://readm.org'
 const method = 'GET'
 
 export const ReadmInfo: SourceInfo = {
-  version: '1.0.9',
+  version: '1.0.10',
   name: 'Readm',
   icon: 'icon.png',
   author: 'Netsky',
@@ -174,7 +174,13 @@ export class Readm extends Source {
     const data = Object(response);
     const manga: MangaTile[] = [];
 
+    if (!data.manga) throw new Error("Failed to create proper response object, missing manga property!");
+
     for (const m of data.manga) {
+      if (!m.url) {
+        console.log("Missing URL property in manga object!");
+        continue;
+      }
       const id = m.url.replace("/manga/", "");
       const image = RM_DOMAIN + m.image;
       const title = m.title;
