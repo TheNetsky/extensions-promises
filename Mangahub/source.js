@@ -11,14 +11,12 @@ var entities_json_1 = __importDefault(require("./maps/entities.json"));
 var legacy_json_1 = __importDefault(require("./maps/legacy.json"));
 var xml_json_1 = __importDefault(require("./maps/xml.json"));
 var decode_codepoint_1 = __importDefault(require("./decode_codepoint"));
+var strictEntityRe = /&(?:[a-zA-Z0-9]+|#[xX][\da-fA-F]+|#\d+);/g;
 exports.decodeXML = getStrictDecoder(xml_json_1.default);
 exports.decodeHTMLStrict = getStrictDecoder(entities_json_1.default);
 function getStrictDecoder(map) {
-    var keys = Object.keys(map).join("|");
     var replace = getReplacer(map);
-    keys += "|#[xX][\\da-fA-F]+|#\\d+";
-    var re = new RegExp("&(?:" + keys + ");", "g");
-    return function (str) { return String(str).replace(re, replace); };
+    return function (str) { return String(str).replace(strictEntityRe, replace); };
 }
 var sorter = function (a, b) { return (a < b ? 1 : -1); };
 exports.decodeHTML = (function () {
@@ -52,7 +50,8 @@ function getReplacer(map) {
             }
             return decode_codepoint_1.default(parseInt(str.substr(2), 10));
         }
-        return map[str.slice(1, -1)];
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        return map[str.slice(1, -1)] || str;
     };
 }
 
@@ -63,7 +62,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var decode_json_1 = __importDefault(require("./maps/decode.json"));
-// Modified version of https://github.com/mathiasbynens/he/blob/master/src/he.js#L94-L119
+// Adapted from https://github.com/mathiasbynens/he/blob/master/src/he.js#L94-L119
+var fromCodePoint = 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+String.fromCodePoint ||
+    function (codePoint) {
+        var output = "";
+        if (codePoint > 0xffff) {
+            codePoint -= 0x10000;
+            output += String.fromCharCode(((codePoint >>> 10) & 0x3ff) | 0xd800);
+            codePoint = 0xdc00 | (codePoint & 0x3ff);
+        }
+        output += String.fromCharCode(codePoint);
+        return output;
+    };
 function decodeCodePoint(codePoint) {
     if ((codePoint >= 0xd800 && codePoint <= 0xdfff) || codePoint > 0x10ffff) {
         return "\uFFFD";
@@ -71,14 +83,7 @@ function decodeCodePoint(codePoint) {
     if (codePoint in decode_json_1.default) {
         codePoint = decode_json_1.default[codePoint];
     }
-    var output = "";
-    if (codePoint > 0xffff) {
-        codePoint -= 0x10000;
-        output += String.fromCharCode(((codePoint >>> 10) & 0x3ff) | 0xd800);
-        codePoint = 0xdc00 | (codePoint & 0x3ff);
-    }
-    output += String.fromCharCode(codePoint);
-    return output;
+    return fromCodePoint(codePoint);
 }
 exports.default = decodeCodePoint;
 
@@ -88,15 +93,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.escape = exports.encodeHTML = exports.encodeXML = void 0;
+exports.escapeUTF8 = exports.escape = exports.encodeNonAsciiHTML = exports.encodeHTML = exports.encodeXML = void 0;
 var xml_json_1 = __importDefault(require("./maps/xml.json"));
 var inverseXML = getInverseObj(xml_json_1.default);
 var xmlReplacer = getInverseReplacer(inverseXML);
-exports.encodeXML = getInverse(inverseXML, xmlReplacer);
+/**
+ * Encodes all non-ASCII characters, as well as characters not valid in XML
+ * documents using XML entities.
+ *
+ * If a character has no equivalent entity, a
+ * numeric hexadecimal reference (eg. `&#xfc;`) will be used.
+ */
+exports.encodeXML = getASCIIEncoder(inverseXML);
 var entities_json_1 = __importDefault(require("./maps/entities.json"));
 var inverseHTML = getInverseObj(entities_json_1.default);
 var htmlReplacer = getInverseReplacer(inverseHTML);
+/**
+ * Encodes all entities and non-ASCII characters in the input.
+ *
+ * This includes characters that are valid ASCII characters in HTML documents.
+ * For example `#` will be encoded as `&num;`. To get a more compact output,
+ * consider using the `encodeNonAsciiHTML` function.
+ *
+ * If a character has no equivalent entity, a
+ * numeric hexadecimal reference (eg. `&#xfc;`) will be used.
+ */
 exports.encodeHTML = getInverse(inverseHTML, htmlReplacer);
+/**
+ * Encodes all non-ASCII characters, as well as characters not valid in HTML
+ * documents using HTML entities.
+ *
+ * If a character has no equivalent entity, a
+ * numeric hexadecimal reference (eg. `&#xfc;`) will be used.
+ */
+exports.encodeNonAsciiHTML = getASCIIEncoder(inverseHTML);
 function getInverseObj(obj) {
     return Object.keys(obj)
         .sort()
@@ -137,10 +167,24 @@ function getInverseReplacer(inverse) {
     multiple.unshift("[" + single.join("") + "]");
     return new RegExp(multiple.join("|"), "g");
 }
+// /[^\0-\x7F]/gu
 var reNonASCII = /(?:[\x80-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])/g;
+var getCodePoint = 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+String.prototype.codePointAt != null
+    ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        function (str) { return str.codePointAt(0); }
+    : // http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+        function (c) {
+            return (c.charCodeAt(0) - 0xd800) * 0x400 +
+                c.charCodeAt(1) -
+                0xdc00 +
+                0x10000;
+        };
 function singleCharReplacer(c) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return "&#x" + c.codePointAt(0).toString(16).toUpperCase() + ";";
+    return "&#x" + (c.length > 1 ? getCodePoint(c) : c.charCodeAt(0))
+        .toString(16)
+        .toUpperCase() + ";";
 }
 function getInverse(inverse, re) {
     return function (data) {
@@ -149,18 +193,42 @@ function getInverse(inverse, re) {
             .replace(reNonASCII, singleCharReplacer);
     };
 }
-var reXmlChars = getInverseReplacer(inverseXML);
+var reEscapeChars = new RegExp(xmlReplacer.source + "|" + reNonASCII.source, "g");
+/**
+ * Encodes all non-ASCII characters, as well as characters not valid in XML
+ * documents using numeric hexadecimal reference (eg. `&#xfc;`).
+ *
+ * Have a look at `escapeUTF8` if you want a more concise output at the expense
+ * of reduced transportability.
+ *
+ * @param data String to escape.
+ */
 function escape(data) {
-    return data
-        .replace(reXmlChars, singleCharReplacer)
-        .replace(reNonASCII, singleCharReplacer);
+    return data.replace(reEscapeChars, singleCharReplacer);
 }
 exports.escape = escape;
+/**
+ * Encodes all characters not valid in XML documents using numeric hexadecimal
+ * reference (eg. `&#xfc;`).
+ *
+ * Note that the output will be character-set dependent.
+ *
+ * @param data String to escape.
+ */
+function escapeUTF8(data) {
+    return data.replace(xmlReplacer, singleCharReplacer);
+}
+exports.escapeUTF8 = escapeUTF8;
+function getASCIIEncoder(obj) {
+    return function (data) {
+        return data.replace(reEscapeChars, function (c) { return obj[c] || singleCharReplacer(c); });
+    };
+}
 
 },{"./maps/entities.json":7,"./maps/xml.json":9}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.decodeXMLStrict = exports.decodeHTML5Strict = exports.decodeHTML4Strict = exports.decodeHTML5 = exports.decodeHTML4 = exports.decodeHTMLStrict = exports.decodeHTML = exports.decodeXML = exports.encodeHTML5 = exports.encodeHTML4 = exports.escape = exports.encodeHTML = exports.encodeXML = exports.encode = exports.decodeStrict = exports.decode = void 0;
+exports.decodeXMLStrict = exports.decodeHTML5Strict = exports.decodeHTML4Strict = exports.decodeHTML5 = exports.decodeHTML4 = exports.decodeHTMLStrict = exports.decodeHTML = exports.decodeXML = exports.encodeHTML5 = exports.encodeHTML4 = exports.escapeUTF8 = exports.escape = exports.encodeNonAsciiHTML = exports.encodeHTML = exports.encodeXML = exports.encode = exports.decodeStrict = exports.decode = void 0;
 var decode_1 = require("./decode");
 var encode_1 = require("./encode");
 /**
@@ -168,6 +236,7 @@ var encode_1 = require("./encode");
  *
  * @param data String to decode.
  * @param level Optional level to decode at. 0 = XML, 1 = HTML. Default is 0.
+ * @deprecated Use `decodeXML` or `decodeHTML` directly.
  */
 function decode(data, level) {
     return (!level || level <= 0 ? decode_1.decodeXML : decode_1.decodeHTML)(data);
@@ -178,6 +247,7 @@ exports.decode = decode;
  *
  * @param data String to decode.
  * @param level Optional level to decode at. 0 = XML, 1 = HTML. Default is 0.
+ * @deprecated Use `decodeHTMLStrict` or `decodeXML` directly.
  */
 function decodeStrict(data, level) {
     return (!level || level <= 0 ? decode_1.decodeXML : decode_1.decodeHTMLStrict)(data);
@@ -188,6 +258,7 @@ exports.decodeStrict = decodeStrict;
  *
  * @param data String to encode.
  * @param level Optional level to encode at. 0 = XML, 1 = HTML. Default is 0.
+ * @deprecated Use `encodeHTML`, `encodeXML` or `encodeNonAsciiHTML` directly.
  */
 function encode(data, level) {
     return (!level || level <= 0 ? encode_1.encodeXML : encode_1.encodeHTML)(data);
@@ -196,15 +267,17 @@ exports.encode = encode;
 var encode_2 = require("./encode");
 Object.defineProperty(exports, "encodeXML", { enumerable: true, get: function () { return encode_2.encodeXML; } });
 Object.defineProperty(exports, "encodeHTML", { enumerable: true, get: function () { return encode_2.encodeHTML; } });
+Object.defineProperty(exports, "encodeNonAsciiHTML", { enumerable: true, get: function () { return encode_2.encodeNonAsciiHTML; } });
 Object.defineProperty(exports, "escape", { enumerable: true, get: function () { return encode_2.escape; } });
-// Legacy aliases
+Object.defineProperty(exports, "escapeUTF8", { enumerable: true, get: function () { return encode_2.escapeUTF8; } });
+// Legacy aliases (deprecated)
 Object.defineProperty(exports, "encodeHTML4", { enumerable: true, get: function () { return encode_2.encodeHTML; } });
 Object.defineProperty(exports, "encodeHTML5", { enumerable: true, get: function () { return encode_2.encodeHTML; } });
 var decode_2 = require("./decode");
 Object.defineProperty(exports, "decodeXML", { enumerable: true, get: function () { return decode_2.decodeXML; } });
 Object.defineProperty(exports, "decodeHTML", { enumerable: true, get: function () { return decode_2.decodeHTML; } });
 Object.defineProperty(exports, "decodeHTMLStrict", { enumerable: true, get: function () { return decode_2.decodeHTMLStrict; } });
-// Legacy aliases
+// Legacy aliases (deprecated)
 Object.defineProperty(exports, "decodeHTML4", { enumerable: true, get: function () { return decode_2.decodeHTML; } });
 Object.defineProperty(exports, "decodeHTML5", { enumerable: true, get: function () { return decode_2.decodeHTML; } });
 Object.defineProperty(exports, "decodeHTML4Strict", { enumerable: true, get: function () { return decode_2.decodeHTMLStrict; } });
