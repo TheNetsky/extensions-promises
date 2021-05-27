@@ -341,7 +341,7 @@ const MangaFastParser_1 = require("./MangaFastParser");
 const MF_DOMAIN = 'https://mangafast.net';
 const method = 'GET';
 exports.MangaFastInfo = {
-    version: '1.0.4',
+    version: '1.0.5',
     name: 'MangaFast',
     icon: 'icon.png',
     author: 'Netsky',
@@ -613,7 +613,7 @@ exports.parseChapters = ($, mangaId) => {
 exports.parseChapterDetails = ($, mangaId, chapterId) => {
     var _a, _b;
     const pages = [];
-    for (const p of $("img", "div.content-comic.py-4").toArray()) {
+    for (const p of $("img", "div.content-comic").toArray()) {
         let image = (_a = $(p).attr("src")) !== null && _a !== void 0 ? _a : "";
         if (!image)
             image = (_b = $(p).attr("data-src")) !== null && _b !== void 0 ? _b : "";
