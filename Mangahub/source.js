@@ -859,7 +859,7 @@ exports.parseMangaDetails = ($, mangaId) => {
     return createManga({
         id: mangaId,
         titles: titles,
-        image: image == "" ? "https://i.imgur.com/GYUxEX8.png" : image,
+        image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
         rating: 0,
         status: status,
         author: author == "" ? "Unknown" : author,
@@ -874,7 +874,7 @@ exports.parseChapters = ($, mangaId) => {
     var _a, _b, _c, _d;
     const chapters = [];
     for (const chapter of $("ul.MWqeC,list-group").children("li").toArray()) {
-        const chapterId = (_b = (_a = $('a', chapter).attr('href')) === null || _a === void 0 ? void 0 : _a.split(`/${mangaId}/`).pop()) !== null && _b !== void 0 ? _b : "";
+        const id = (_b = (_a = $('a', chapter).attr('href')) === null || _a === void 0 ? void 0 : _a.split(`/${mangaId}/`).pop()) !== null && _b !== void 0 ? _b : "";
         const title = $("span.text-secondary._3D1SJ", chapter).text().replace("#", "Chapter ").trim();
         const chapterSection = $("span.text-secondary._3D1SJ", chapter).text().trim();
         const chapRegex = chapterSection.match(/(\d+\.?\d?)/);
@@ -882,8 +882,10 @@ exports.parseChapters = ($, mangaId) => {
         if (chapRegex && chapRegex[1])
             chapterNumber = Number(chapRegex[1]);
         const date = parseDate((_d = (_c = $("small.UovLc", chapter)) === null || _c === void 0 ? void 0 : _c.text()) !== null && _d !== void 0 ? _d : "");
+        if (!id)
+            continue;
         chapters.push(createChapter({
-            id: chapterId,
+            id,
             mangaId,
             name: title,
             langCode: paperback_extensions_common_1.LanguageCode.ENGLISH,
@@ -904,6 +906,8 @@ exports.parseUpdatedManga = ($, time, ids) => {
     for (const manga of $("div.media", "div._21UU2").toArray()) {
         const id = (_b = (_a = $('a', manga).attr('href')) === null || _a === void 0 ? void 0 : _a.split('/manga/').pop()) !== null && _b !== void 0 ? _b : "";
         const mangaDate = parseDate($('._3L1my', manga).first().text());
+        if (!id)
+            continue;
         if (mangaDate > time) {
             if (ids.includes(id)) {
                 updatedManga.push(id);
@@ -951,7 +955,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
             continue;
         hotManga.push(createMangaTile({
             id: id,
-            image: image,
+            image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
             title: createIconText({ text: decodeHTMLEntity(title) }),
             subtitleText: createIconText({ text: subtitle }),
         }));
@@ -970,7 +974,7 @@ exports.parseHomeSections = ($, sections, sectionCallback) => {
             continue;
         latestManga.push(createMangaTile({
             id: id,
-            image: image,
+            image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
             title: createIconText({ text: decodeHTMLEntity(title) }),
             subtitleText: createIconText({ text: subtitle }),
         }));
@@ -998,7 +1002,7 @@ exports.parseSearch = ($) => {
             continue;
         mangas.push(createMangaTile({
             id,
-            image: image,
+            image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
             title: createIconText({ text: decodeHTMLEntity(title) }),
             subtitleText: createIconText({ text: subtitle }),
         }));
@@ -1019,7 +1023,7 @@ exports.parseViewMore = ($, homepageSectionId) => {
             continue;
         mangas.push(createMangaTile({
             id,
-            image,
+            image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
             title: createIconText({ text: decodeHTMLEntity(title) }),
             subtitleText: createIconText({ text: subtitle }),
         }));
