@@ -608,6 +608,8 @@ exports.parseChapters = ($, mangaId) => {
         let chapterNumber = 0;
         if (chapRegex && chapRegex[1])
             chapterNumber = Number(chapRegex[1].replace(/\\/g, "."));
+        if (!id)
+            continue;
         chapters.push(createChapter({
             id: id,
             mangaId,
@@ -628,6 +630,8 @@ exports.parseChapterDetails = ($, mangaId, chapterId) => {
             image = (_b = $(p).attr("data-src")) !== null && _b !== void 0 ? _b : "";
         if (image.includes("adsense"))
             continue;
+        if (!image)
+            throw new Error(`Unable to parse image(s) from chapterID: ${chapterId}`);
         pages.push(image);
     }
     const chapterDetails = createChapterDetails({
@@ -649,6 +653,8 @@ exports.parseUpdatedManga = ($, time, ids) => {
         let date = null;
         if (dateRegex && dateRegex[1])
             date = dateRegex[1];
+        if (!id)
+            continue;
         const mangaDate = parseDate(date);
         if (mangaDate > time) {
             if (ids.includes(id)) {
