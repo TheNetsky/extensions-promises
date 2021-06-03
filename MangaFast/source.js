@@ -341,7 +341,7 @@ const MangaFastParser_1 = require("./MangaFastParser");
 const MF_DOMAIN = 'https://mangafast.net';
 const method = 'GET';
 exports.MangaFastInfo = {
-    version: '1.0.5',
+    version: '1.0.6',
     name: 'MangaFast',
     icon: 'icon.png',
     author: 'Netsky',
@@ -353,18 +353,28 @@ exports.MangaFastInfo = {
         {
             text: "Notifications",
             type: paperback_extensions_common_1.TagType.GREEN
+        },
+        {
+            text: "Slow",
+            type: paperback_extensions_common_1.TagType.YELLOW
         }
     ]
 };
 class MangaFast extends paperback_extensions_common_1.Source {
+    constructor() {
+        super(...arguments);
+        this.requestManager = createRequestManager({
+            requestsPerSecond: 4,
+            requestTimeout: 15000,
+        });
+    }
     getMangaShareUrl(mangaId) { return `${MF_DOMAIN}/read/${mangaId}`; }
     ;
     getMangaDetails(mangaId) {
         return __awaiter(this, void 0, void 0, function* () {
             const request = createRequestObject({
-                url: `${MF_DOMAIN}/read/`,
+                url: `${MF_DOMAIN}/read/${mangaId}/`,
                 method,
-                param: mangaId,
             });
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
@@ -374,9 +384,8 @@ class MangaFast extends paperback_extensions_common_1.Source {
     getChapters(mangaId) {
         return __awaiter(this, void 0, void 0, function* () {
             const request = createRequestObject({
-                url: `${MF_DOMAIN}/read/`,
+                url: `${MF_DOMAIN}/read/${mangaId}/`,
                 method,
-                param: mangaId,
             });
             const response = yield this.requestManager.schedule(request, 1);
             const $ = this.cheerio.load(response.data);
@@ -524,7 +533,7 @@ class MangaFast extends paperback_extensions_common_1.Source {
     getTags() {
         return __awaiter(this, void 0, void 0, function* () {
             const request = createRequestObject({
-                url: `${MF_DOMAIN}/genre/action`,
+                url: `${MF_DOMAIN}/genre/action/`,
                 method,
             });
             const response = yield this.requestManager.schedule(request, 1);
@@ -576,7 +585,7 @@ exports.parseMangaDetails = ($, mangaId) => {
     return createManga({
         id: mangaId,
         titles: titles,
-        image: image == "" ? "https://i.imgur.com/GYUxEX8.png" : image,
+        image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
         rating: 0,
         status: status,
         author: author,
@@ -666,7 +675,7 @@ exports.parseHomeSections = ($, section) => {
                     continue;
                 mangaTiles.push(createMangaTile({
                     id: id,
-                    image: image,
+                    image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
                     title: createIconText({ text: title }),
                     subtitleText: createIconText({ text: lastChapter }),
                 }));
@@ -683,7 +692,7 @@ exports.parseHomeSections = ($, section) => {
                     continue;
                 mangaTiles.push(createMangaTile({
                     id: id,
-                    image: image,
+                    image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
                     title: createIconText({ text: title }),
                     subtitleText: createIconText({ text: lastChapter }),
                 }));
@@ -700,7 +709,7 @@ exports.parseHomeSections = ($, section) => {
                     continue;
                 mangaTiles.push(createMangaTile({
                     id: id,
-                    image: image,
+                    image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
                     title: createIconText({ text: title }),
                     subtitleText: createIconText({ text: lastChapter }),
                 }));
@@ -717,7 +726,7 @@ exports.parseHomeSections = ($, section) => {
                     continue;
                 mangaTiles.push(createMangaTile({
                     id: id,
-                    image: image,
+                    image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
                     title: createIconText({ text: title }),
                     subtitleText: createIconText({ text: lastChapter }),
                 }));
@@ -734,7 +743,7 @@ exports.parseHomeSections = ($, section) => {
                     continue;
                 mangaTiles.push(createMangaTile({
                     id: id,
-                    image: image,
+                    image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
                     title: createIconText({ text: title }),
                     subtitleText: createIconText({ text: lastChapter }),
                 }));
@@ -768,7 +777,7 @@ exports.parseSearch = ($) => {
             continue;
         mangas.push(createMangaTile({
             id,
-            image: image,
+            image: !image ? "https://i.imgur.com/GYUxEX8.png" : image,
             title: createIconText({ text: title }),
             subtitleText: createIconText({ text: subtitle }),
         }));
