@@ -18,7 +18,7 @@ import {Parser,} from './Parser'
 const READCOMICSTO_DOMAIN = 'https://readcomiconline.li'
 
 export const ReadComicsToInfo: SourceInfo = {
-    version: '1.0.5',
+    version: '1.0.7',
     name: 'ReadComicsOnlineLi',
     description: 'Extension that pulls western comics from readcomiconline.li',
     author: 'Aurora',
@@ -26,7 +26,12 @@ export const ReadComicsToInfo: SourceInfo = {
     icon: "logo.png",
     hentaiSource: false,
     websiteBaseURL: READCOMICSTO_DOMAIN,
-    sourceTags: []
+    sourceTags: [
+        {
+            text: "Buggy",
+            type: TagType.RED
+        }
+    ]
 }
 
 export class ReadComicsTo extends Source {
@@ -294,7 +299,7 @@ export class ReadComicsTo extends Source {
 
     getCloudflareBypassRequest() {
         return createRequestObject({
-            url: `${READCOMICSTO_DOMAIN}`,
+            url: `${READCOMICSTO_DOMAIN}/Comic/The-Walking-Dead/Issue-1?id=1715`,
             method: 'GET',
         })
     }
