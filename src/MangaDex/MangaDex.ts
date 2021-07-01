@@ -28,7 +28,7 @@ export const MangaDexInfo: SourceInfo = {
   description: 'Extension that pulls manga from MangaDex',
   icon: 'icon.png',
   name: 'MangaDex',
-  version: '1.1.0',
+  version: '1.1.1',
   authorWebsite: 'https://github.com/nar1n',
   websiteBaseURL: MANGADEX_DOMAIN,
   hentaiSource: false,
@@ -124,7 +124,7 @@ export class MangaDex extends Source {
       offset += 500
     
       const response = await this.requestManager.schedule(request, 1)
-      const json = typeof response.data === "string" ? JSON.parse(response.data) : response.data
+      const json = (typeof response.data) === "string" ? JSON.parse(response.data) : response.data
 
       for (const mapping of json) {
         UUIDsDict[mapping.data.attributes.legacyId] = mapping.data.attributes.newId
@@ -145,7 +145,7 @@ export class MangaDex extends Source {
     })
     
     const response = await this.requestManager.schedule(request, 1)
-    const json = typeof response.data === "string" ? JSON.parse(response.data) : response.data
+    const json = (typeof response.data) === "string" ? JSON.parse(response.data) : response.data
 
     return json.baseUrl
   }
@@ -157,7 +157,7 @@ export class MangaDex extends Source {
     })
     
     const response = await this.requestManager.schedule(request, 1)
-    const json = typeof response.data === "string" ? JSON.parse(response.data) : response.data
+    const json = (typeof response.data) === "string" ? JSON.parse(response.data) : response.data
 
     return `${MANGADEX_API}/manga?limit=100&contentRating[]=none&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic&includes[]=cover_art&ids[]=${json.relationships.filter((x: any) => x.type == 'manga').map((x: any) => x.id).join('&ids[]=')}`
   }
@@ -178,7 +178,7 @@ export class MangaDex extends Source {
     })
     
     const response = await this.requestManager.schedule(request, 1)
-    const json = typeof response.data === "string" ? JSON.parse(response.data) : response.data
+    const json = (typeof response.data) === "string" ? JSON.parse(response.data) : response.data
 
     const mangaDetails = json.data.attributes
     const titles = [mangaDetails.title[Object.keys(mangaDetails.title)[0]]].concat(mangaDetails.altTitles.map((x: any)  => this.decodeHTMLEntity(x[Object.keys(x)[0]])))
@@ -205,7 +205,7 @@ export class MangaDex extends Source {
     if (coverFileName) {
       image = `${COVER_BASE_URL}/${newMangaId}/${coverFileName}`
     } else {
-      image = 'https://i.imgur.com/6TrIues.jpg'
+      image = 'https://mangadex.org/_nuxt/img/cover-placeholder.d12c3c5.jpg'
     }
 
     return createManga({
@@ -244,7 +244,7 @@ export class MangaDex extends Source {
       method: 'GET',
       })
       const response = await this.requestManager.schedule(request, 1)
-      const json = typeof response.data === "string" ? JSON.parse(response.data) : response.data
+      const json = (typeof response.data) === "string" ? JSON.parse(response.data) : response.data
       offset += 500
 
       if(json.results === undefined) throw new Error(`Failed to parse json results for ${newMangaId}`)
@@ -300,7 +300,7 @@ export class MangaDex extends Source {
     })
 
     const response = await this.requestManager.schedule(request, 1)
-    const json = typeof response.data === "string" ? JSON.parse(response.data) : response.data
+    const json = (typeof response.data) === "string" ? JSON.parse(response.data) : response.data
 
     const chapterDetails = json.data.attributes
     const pages = chapterDetails.data.map(
@@ -329,7 +329,7 @@ export class MangaDex extends Source {
       return createPagedResults({results})
     }
 
-    const json = typeof response.data === "string" ? JSON.parse(response.data) : response.data
+    const json = (typeof response.data) === "string" ? JSON.parse(response.data) : response.data
 
     if(json.results === undefined) {throw new Error(`Failed to parse json for the given search`)}
 
@@ -342,7 +342,7 @@ export class MangaDex extends Source {
       if (coverFileName) {
         image = `${COVER_BASE_URL}/${mangaId}/${coverFileName}.256.jpg`
       } else {
-        image = 'https://i.imgur.com/6TrIues.jpg'
+        image = 'https://mangadex.org/_nuxt/img/cover-placeholder.d12c3c5.jpg'
       }
 
       results.push(createMangaTile({
@@ -366,8 +366,8 @@ export class MangaDex extends Source {
           method: 'GET',
         }),
         section: createHomeSection({
-          id: 'featured',
-          title: 'FEATURED TITLES',
+          id: 'seasonal',
+          title: 'SEASONAL',
           view_more: true,
         }),
       },
@@ -403,7 +403,7 @@ export class MangaDex extends Source {
       // Get the section data
       promises.push(
         this.requestManager.schedule(section.request, 1).then(async response => {
-          const json = typeof response.data === "string" ? JSON.parse(response.data) : response.data
+          const json = (typeof response.data) === "string" ? JSON.parse(response.data) : response.data
           let results = []
 
           if(json.results === undefined) throw new Error(`Failed to parse json results for section ${section.section.title}`)
@@ -417,7 +417,7 @@ export class MangaDex extends Source {
             if (coverFileName) {
               image = `${COVER_BASE_URL}/${mangaId}/${coverFileName}.256.jpg`
             } else {
-              image = 'https://i.imgur.com/6TrIues.jpg'
+              image = 'https://mangadex.org/_nuxt/img/cover-placeholder.d12c3c5.jpg'
             }
 
             results.push(createMangaTile({
@@ -444,7 +444,7 @@ export class MangaDex extends Source {
     let url: string = ''
 
     switch(homepageSectionId) {
-      case 'featured': {
+      case 'seasonal': {
         url = await this.getCustomListRequestURL('8018a70b-1492-4f91-a584-7451d7787f7a')
         break
       }
@@ -464,7 +464,7 @@ export class MangaDex extends Source {
     })
 
     const response = await this.requestManager.schedule(request, 1)
-    const json = typeof response.data === "string" ? JSON.parse(response.data) : response.data
+    const json = (typeof response.data) === "string" ? JSON.parse(response.data) : response.data
 
     if(json.results === undefined) throw new Error(`Failed to parse json results for getViewMoreItems`)
 
@@ -477,7 +477,7 @@ export class MangaDex extends Source {
       if (coverFileName) {
         image = `${COVER_BASE_URL}/${mangaId}/${coverFileName}.256.jpg`
       } else {
-        image = 'https://i.imgur.com/6TrIues.jpg'
+        image = 'https://mangadex.org/_nuxt/img/cover-placeholder.d12c3c5.jpg'
       }
 
       if (!collectedIds.includes(mangaId)) {
@@ -496,65 +496,68 @@ export class MangaDex extends Source {
   })
   }
 
-  // async filterUpdatedManga(mangaUpdatesFoundCallback: (updates: MangaUpdates) => void, time: Date, ids: string[]): Promise<void> {
-  //   let legacyIds: string[] = ids.filter(x => !x.includes('-'))
-  //   let conversionDict: {[id: string]: string} = {}
-  //   if (legacyIds.length != 0 ) {
-  //     conversionDict = await this.getMangaUUIDs(legacyIds)
-  //     for (const key of Object.keys(conversionDict)) {
-  //       conversionDict[conversionDict[key]] = key
-  //     }
-  //   }
+  async filterUpdatedManga(mangaUpdatesFoundCallback: (updates: MangaUpdates) => void, time: Date, ids: string[]): Promise<void> {
+    let legacyIds: string[] = ids.filter(x => !x.includes('-'))
+    let conversionDict: {[id: string]: string} = {}
+    if (legacyIds.length != 0 ) {
+      conversionDict = await this.getMangaUUIDs(legacyIds)
+      for (const key of Object.keys(conversionDict)) {
+        conversionDict[conversionDict[key]] = key
+      }
+    }
 
-  //   let offset = 0
-  //   let loadNextPage = true
-  //   let updatedManga: string[] = []
-  //   while (loadNextPage) {
+    let offset = 0
+    const maxRequests = 100
+    let loadNextPage = true
+    let updatedManga: string[] = []
+    const updatedAt = time.toISOString().split('.')[0] // They support a weirdly truncated version of an ISO timestamp
 
-  //     const updatedAt = time.toISOString().substr(0, time.toISOString().length - 5) // They support a weirdly truncated version of an ISO timestamp. A magic number of '5' seems to be always valid
+    while (loadNextPage) {
+      const request = createRequestObject({
+        url: `${MANGADEX_API}/manga?limit=100&offset=${offset}&updatedAtSince=${updatedAt}&contentRating[]=none&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic&includes[]=cover_art&order[updatedAt]=desc`,
+        method: 'GET',
+      })
 
-  //     const request = createRequestObject({
-  //       url: `${MANGADEX_API}/manga?limit=100&offset=${offset}&updatedAtSince=${updatedAt}`,
-  //       method: 'GET',
-  //     })
+      const response = await this.requestManager.schedule(request, 1)
 
-  //     const response = await this.requestManager.schedule(request, 1)
+      // If we have no content, there are no updates available
+      if(response.status == 204) {
+        return
+      }
 
-  //     // If we have no content, there are no updates available
-  //     if(response.status == 204) {
-  //       return
-  //     }
+      const json = (typeof response.data) === "string" ? JSON.parse(response.data) : response.data
 
-  //     const json = typeof response.data === "string" ? JSON.parse(response.data) : response.data
+      if(json.results === undefined) {
+        // Log this, no need to throw.
+        console.log(`Failed to parse JSON results for filterUpdatedManga using the date ${updatedAt} and the offset ${offset}`)
+        return
+      }
 
-  //     if(json.results === undefined) {
-  //       // Log this, no need to throw.
-  //       console.log(`Failed to parse JSON results for filterUpdatedManga using the date ${updatedAt} and the offset ${offset}`)
-  //       return
-  //     }
+      for (const manga of json.results) {
+        const mangaId = manga.data.id
+        const mangaTime = new Date(manga.data.attributes.updatedAt)
 
-  //     for (const manga of json.results) {
-  //       const mangaId = manga.data.id
-  //       const mangaTime = new Date(manga.data.attributes.updatedAt)
-
-  //       if (mangaTime <= time) {
-  //         loadNextPage = false
-  //       } else if (ids.includes(mangaId)) {
-  //         updatedManga.push(mangaId)
-  //       } else if (ids.includes(conversionDict[mangaId])) {
-  //         updatedManga.push(conversionDict[mangaId])
-  //       }
-  //     }
-  //     if (loadNextPage) {
-  //       offset = offset + 100
-  //     }
-  //   }
-  //   if (updatedManga.length > 0) {
-  //     mangaUpdatesFoundCallback(createMangaUpdates({
-  //         ids: updatedManga
-  //     }))
-  //   }
-  // }
+        if (mangaTime <= time) {
+          loadNextPage = false
+        } else if (ids.includes(mangaId)) {
+          updatedManga.push(mangaId)
+        } else if (ids.includes(conversionDict[mangaId])) {
+          updatedManga.push(conversionDict[mangaId])
+        }
+      }
+      
+      offset = offset + 100
+      if (json.total <= offset || offset >= 100 * maxRequests) {
+        loadNextPage = false
+      }
+      if (updatedManga.length > 0) {
+        mangaUpdatesFoundCallback(createMangaUpdates({
+            ids: updatedManga
+        }))
+      }
+      updatedManga = []
+    }
+  }
 
   decodeHTMLEntity(str: string): string {
     return entities.decodeHTML(str)

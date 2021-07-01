@@ -1,19 +1,16 @@
 import {Chapter, LanguageCode, Manga, MangaStatus, MangaTile, Tag, TagSection} from 'paperback-extensions-common'
 
+const entities = require('entities')
+
 export class Parser {
 
 
     parseMangaDetails($: CheerioSelector, mangaId: string): Manga {
 
 
-        let titles = [$('.font-bold.text-xl').text().trim()]
-        let descBox = $('.flex.flex-col')
-        let altTitle = $('.text-color-text-secondary', $('div:nth-child(1)', descBox)).last().text().trim()
-        if (altTitle != 'Title') {
-            titles.push(altTitle)
-        }
+        let titles = [this.decodeHTMLEntity($('.font-bold.text-lg').text().trim())]
         let image = $('.lazy').attr('data-src')
-        let summary = $('p', $('.my-3', descBox)).text().trim()
+        let summary = $('p.text-sm.text-color-text-secondary').text().trim()
 
         let status = MangaStatus.ONGOING, released, rating: number = 0
         let tagArray0: Tag[] = []
@@ -25,7 +22,7 @@ export class Parser {
             tagArray0 = [...tagArray0, createTag({id: id, label: $(obj).text().trim()})]
         }
         let i = 0
-        for (let item of $('div', $('.grid.gap-2')).toArray()) {
+        for (let item of $('div', $('.grid.grid-cols-1.gap-3.mb-3')).toArray()) {
             let descObj = $('div', $(item))
             if (!descObj.html()) {
                 continue
@@ -84,8 +81,8 @@ export class Parser {
 
         let chapters: Chapter[] = []
 
-        for (let obj of $('option', $('select[name=view-chapter]')).toArray()) {
-            let chapterId = $(obj).attr('value')
+        for (let obj of $('a.border.border-color-border-primary.p-1').toArray()) {
+            let chapterId = $(obj).attr('href')
             if (chapterId == 'Read Chapters') {
                 continue
             }
@@ -133,10 +130,9 @@ export class Parser {
     filterUpdatedManga($: CheerioSelector, time: Date, ids: string[]): { updates: string[], loadNextPage: boolean } {
         let foundIds: string[] = []
         let passedReferenceTime = false
-        for (let item of $('.font-medium.text-color-text-primary').toArray()) {
-            let href = ($(item).attr('href') ?? '')
-            let id = href.split('-')[0].split('/').pop() + '/' + href.split('/').pop()?.split('-chapter')[0].trim()
-            let mangaTime = new Date(Date.parse($(item).parent().next().text() ?? 0));
+        for (let item of $('div.flex.bg-color-bg-secondary.p-2.rounded').toArray()) {
+            let id = $('a.inilne.block', item).attr('href')?.replace('/manga/', '') ?? ''
+            let mangaTime = new Date($('time-ago', item).attr('datetime') ?? '');
             passedReferenceTime = mangaTime <= time
             if (!passedReferenceTime) {
                 if (ids.includes(id)) {
@@ -239,10 +235,9 @@ export class Parser {
     parseRecentUpdatesSection($: CheerioSelector): MangaTile[] {
         let mangaTiles: MangaTile[] = []
         let collectedIds: string[] = []
-        for (let obj of $('.mb-2.rounded.border').toArray()) {
-            let href = ($('a', $(obj)).attr('href') ?? '')
-            let id = href.split('-')[0].split('/').pop() + '/' + href.split('/').pop()?.split('-chapter')[0].trim()
-            let titleText = this.decodeHTMLEntity($('a', $('.mb-2', $('.p-3', $(obj)))).text().split(' Chapter')[0])
+        for (let obj of $('div.flex.bg-color-bg-secondary.p-2.rounded').toArray()) {
+            let id = $('a.inilne.block', obj).attr('href')?.replace('/manga/', '')
+            let titleText = this.decodeHTMLEntity($('a.inilne.block', obj).text())
 
             let image = $('img', $('a', $(obj))).attr('data-src')
 
@@ -265,7 +260,7 @@ export class Parser {
     
     decodeHTMLEntity(str: string): string {
         return str.replace(/&#(\d+);/g, function (match, dec) {
-            return String.fromCharCode(dec);
+            return entities.decodeHTML(String.fromCharCode(dec));
         })
     }
 }
