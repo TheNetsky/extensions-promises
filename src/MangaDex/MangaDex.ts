@@ -28,7 +28,7 @@ export const MangaDexInfo: SourceInfo = {
   description: 'Extension that pulls manga from MangaDex',
   icon: 'icon.png',
   name: 'MangaDex',
-  version: '1.1.1',
+  version: '1.1.3',
   authorWebsite: 'https://github.com/nar1n',
   websiteBaseURL: MANGADEX_DOMAIN,
   hentaiSource: false,
@@ -362,7 +362,7 @@ export class MangaDex extends Source {
     const sections = [
       {
         request: createRequestObject({
-          url: await this.getCustomListRequestURL('8018a70b-1492-4f91-a584-7451d7787f7a'),
+          url: await this.getCustomListRequestURL('a153b4e6-1fcc-4f45-a990-f37f989c0d74'),
           method: 'GET',
         }),
         section: createHomeSection({
@@ -509,12 +509,13 @@ export class MangaDex extends Source {
     let offset = 0
     const maxRequests = 100
     let loadNextPage = true
+    let mangaToUpdate: string[] = []
     let updatedManga: string[] = []
     const updatedAt = time.toISOString().split('.')[0] // They support a weirdly truncated version of an ISO timestamp
 
     while (loadNextPage) {
       const request = createRequestObject({
-        url: `${MANGADEX_API}/manga?limit=100&offset=${offset}&updatedAtSince=${updatedAt}&contentRating[]=none&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic&includes[]=cover_art&order[updatedAt]=desc`,
+        url: `${MANGADEX_API}/chapter?limit=100&offset=${offset}&publishAtSince=${updatedAt}&order[publishAt]=desc`,
         method: 'GET',
       })
 
@@ -533,16 +534,15 @@ export class MangaDex extends Source {
         return
       }
 
-      for (const manga of json.results) {
-        const mangaId = manga.data.id
-        const mangaTime = new Date(manga.data.attributes.updatedAt)
+      for (const chapter of json.results) {
+        const mangaId = chapter.relationships.filter((x: any)=> x.type == 'manga')[0]?.id
 
-        if (mangaTime <= time) {
-          loadNextPage = false
-        } else if (ids.includes(mangaId)) {
+        if (ids.includes(mangaId) && !updatedManga.includes(mangaId)) {
+          mangaToUpdate.push(mangaId)
           updatedManga.push(mangaId)
         } else if (ids.includes(conversionDict[mangaId])) {
-          updatedManga.push(conversionDict[mangaId])
+          mangaToUpdate.push(conversionDict[mangaId])
+          updatedManga.push(mangaId)
         }
       }
       
@@ -550,12 +550,12 @@ export class MangaDex extends Source {
       if (json.total <= offset || offset >= 100 * maxRequests) {
         loadNextPage = false
       }
-      if (updatedManga.length > 0) {
+      if (mangaToUpdate.length > 0) {
         mangaUpdatesFoundCallback(createMangaUpdates({
-            ids: updatedManga
+            ids: mangaToUpdate
         }))
       }
-      updatedManga = []
+      mangaToUpdate = []
     }
   }
 
